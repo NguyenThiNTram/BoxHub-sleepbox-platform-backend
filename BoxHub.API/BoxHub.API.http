@@ -1,0 +1,6 @@
+@BoxHub.API_HostAddress = http://localhost:5120
+
+GET {{BoxHub.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
