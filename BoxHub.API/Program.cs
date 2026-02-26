@@ -20,6 +20,10 @@ namespace BoxHub.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+            builder.WebHost.UseUrls($"http://*:{port}");
+
             var configuration = builder.Configuration;
             var environment = builder.Environment;
 
