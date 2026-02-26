@@ -142,13 +142,19 @@ namespace BoxHub.API
             // ===============================
             // Middleware pipeline
             // ===============================
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    app.UseSwagger();
+            //    app.UseSwaggerUI();
+            //}
 
-            app.UseHttpsRedirection();
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+            app.Run($"http://0.0.0.0:{port}");
+
+            //app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
