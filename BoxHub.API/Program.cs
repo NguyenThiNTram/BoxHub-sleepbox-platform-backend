@@ -20,6 +20,13 @@ namespace BoxHub.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.WebHost.ConfigureKestrel(serverOptions =>
+            {
+                serverOptions.ListenAnyIP(
+                    int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "8080"));
+            });
+
             var configuration = builder.Configuration;
             var environment = builder.Environment;
 
@@ -102,7 +109,7 @@ namespace BoxHub.API
                 })
                 .AddJwtBearer(options =>
                 {
-                    options.RequireHttpsMetadata = true;
+                    options.RequireHttpsMetadata = false;
                     options.SaveToken = false;
 
                     options.TokenValidationParameters = new TokenValidationParameters
@@ -142,20 +149,11 @@ namespace BoxHub.API
             // ===============================
             // Middleware pipeline
             // ===============================
-            //if (app.Environment.IsDevelopment())
-            //{
-            //    app.UseSwagger();
-            //    app.UseSwaggerUI();
-            //}
-
-            app.UseSwagger();
-            app.UseSwaggerUI();
-
-            builder.WebHost.ConfigureKestrel(serverOptions =>
+            if (app.Environment.IsDevelopment())
             {
-                serverOptions.ListenAnyIP(
-                    int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "8080"));
-            });
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             //app.UseHttpsRedirection();
 
