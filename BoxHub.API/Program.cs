@@ -20,13 +20,6 @@ namespace BoxHub.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            builder.WebHost.ConfigureKestrel(serverOptions =>
-            {
-                serverOptions.ListenAnyIP(
-                    int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "8080"));
-            });
-
             var configuration = builder.Configuration;
             var environment = builder.Environment;
 
@@ -42,23 +35,6 @@ namespace BoxHub.API
             // ===============================
             // Database (PostgreSQL - Supabase)
             // ===============================
-            //builder.Services.AddDbContext<BoxHubDbContext>(options =>
-            //{
-            //    options.UseNpgsql(
-            //        configuration.GetConnectionString("DefaultConnection"),
-            //        npgsqlOptions =>
-            //        {
-            //            // Retry for cloud transient faults
-            //            npgsqlOptions.EnableRetryOnFailure(5);
-            //        });
-
-            //    if (environment.IsDevelopment())
-            //    {
-            //        options.EnableDetailedErrors();
-            //        options.EnableSensitiveDataLogging();
-            //    }
-            //});
-
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
             // Create data source builder
@@ -109,7 +85,7 @@ namespace BoxHub.API
                 })
                 .AddJwtBearer(options =>
                 {
-                    options.RequireHttpsMetadata = false;
+                    options.RequireHttpsMetadata = true;
                     options.SaveToken = false;
 
                     options.TokenValidationParameters = new TokenValidationParameters
@@ -155,7 +131,7 @@ namespace BoxHub.API
                 app.UseSwaggerUI();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
