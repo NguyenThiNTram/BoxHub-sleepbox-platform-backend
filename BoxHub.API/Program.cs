@@ -21,6 +21,10 @@ namespace BoxHub.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // ===============================
+            // Render PORT config
+            // ===============================
+
             var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
             builder.WebHost.UseUrls($"http://*:{port}");
 
@@ -35,6 +39,24 @@ namespace BoxHub.API
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // ===============================
+            // CORS
+            // ===============================
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFE", policy =>
+                {
+                    policy.WithOrigins(
+                            "http://localhost:5173", // FE local
+                            "http://localhost:3000", // React
+                            "https://your-fe-domain.vercel.app" // FE production
+                        )
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
 
             // ===============================
             // Database (PostgreSQL - Supabase)
@@ -147,6 +169,8 @@ namespace BoxHub.API
             //app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("AllowFE");
 
             app.UseAuthentication();
             app.UseAuthorization();
