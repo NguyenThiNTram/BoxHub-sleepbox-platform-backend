@@ -81,6 +81,7 @@ namespace BoxHub.API
                 options.AddPolicy("AllowFE", policy =>
                 {
                     policy.WithOrigins(
+                            "http://localhost:8081",
                             "http://localhost:5173", // FE local
                             "http://localhost:3000", // React
                             "https://your-fe-domain.vercel.app" // FE production
