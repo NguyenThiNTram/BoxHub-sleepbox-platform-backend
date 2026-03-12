@@ -1,11 +1,13 @@
-using BoxHub.Application.Auth;
+using BoxHub.Application.DTOs.Requests.Auths;
+using BoxHub.Application.DTOs.Responses;
+using BoxHub.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoxHub.API.Controllers;
 
 [ApiController]
 [Route("api/auth/guest")]
-public sealed class AuthController : ControllerBase
+public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
 
@@ -15,60 +17,54 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    //[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
-    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+    //[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
     //[ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Register([FromBody] RegisterGuestRequest request, CancellationToken cancellationToken)
+    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Register(
+        RegisterGuestRequest request,
+        CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
+        if (request.Password != request.ConfirmPassword)
         {
+            ModelState.AddModelError(
+                nameof(request.ConfirmPassword),
+                "Passwords do not match.");
+
             return ValidationProblem(ModelState);
         }
 
-        if (!string.Equals(request.Password, request.ConfirmPassword, StringComparison.Ordinal))
+        var result = await _authService
+            .RegisterGuestAsync(request, cancellationToken);
+
+        if (result is null)
         {
-            return BadRequest(new { error = "Password and confirmPassword do not match." });
+            return Conflict(new
+            {
+                error = "Email already exists."
+            });
         }
 
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-        {
-            return BadRequest(new { error = "Email and password are required." });
-        }
-
-        var result = await _authService.RegisterGuestAsync(request, cancellationToken);
-
-        if (result == null)
-        {
-            return Conflict(new { error = "Email already exists." });
-        }
-
-        return Ok(result);
+        return Created("", result);
     }
 
     [HttpPost("login")]
     //[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
-    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
     //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Login([FromBody] LoginGuestRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Login(
+        LoginGuestRequest request,
+        CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-        {
-            return ValidationProblem(ModelState);
-        }
+        var result = await _authService
+            .LoginGuestAsync(request, cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        if (result is null)
         {
-            return BadRequest(new { error = "Email and password are required." });
-        }
-
-        var result = await _authService.LoginGuestAsync(request, cancellationToken);
-
-        if (result == null)
-        {
-            return Unauthorized(new { error = "Invalid credentials or inactive account." });
+            return Unauthorized(new
+            {
+                error = "Invalid credentials or inactive account."
+            });
         }
 
         return Ok(result);
     }
 }
-

@@ -3,33 +3,35 @@ using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
 
-public partial class Conversation
+public partial class conversation
 {
-    public Guid ConversationId { get; set; }
+    public Guid conversation_id { get; set; }
 
-    public Guid? GuestId { get; set; }
+    public string conversation_type { get; set; } = null!;
 
-    public Guid? HostId { get; set; }
+    public Guid? guest_id { get; set; }
 
-    public Guid? StaffId { get; set; }
+    public Guid? host_id { get; set; }
 
-    public Guid? BookingId { get; set; }
+    public Guid? staff_id { get; set; }
 
-    public Guid? FacilityId { get; set; }
+    public Guid? booking_id { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
+    public Guid? facility_id { get; set; }
 
-    public DateTime? LastMessageAt { get; set; }
+    public DateTime created_at { get; set; }
 
-    public virtual Booking? Booking { get; set; }
+    public DateTime? last_message_at { get; set; }
 
-    public virtual Facility? Facility { get; set; }
+    public virtual booking? booking { get; set; }
 
-    public virtual User? Guest { get; set; }
+    public virtual facility? facility { get; set; }
 
-    public virtual HostProfile? Host { get; set; }
+    public virtual user? guest { get; set; }
 
-    public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
+    public virtual host_profile? host { get; set; }
 
-    public virtual StaffProfile? Staff { get; set; }
+    public virtual ICollection<message> messages { get; set; } = new List<message>();
+
+    public virtual staff_profile? staff { get; set; }
 }

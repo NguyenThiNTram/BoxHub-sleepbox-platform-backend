@@ -3,27 +3,25 @@ using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
 
-public partial class Review
+public partial class review
 {
-    public Guid ReviewId { get; set; }
+    public Guid review_id { get; set; }
 
-    public Guid? BookingId { get; set; }
+    public Guid booking_id { get; set; }
 
-    public Guid? GuestId { get; set; }
+    public Guid guest_id { get; set; }
 
-    public Guid? BoxId { get; set; }
+    public Guid facility_id { get; set; }
 
-    public int? RatingScore { get; set; }
+    public int rating_score { get; set; }
 
-    public string? Comment { get; set; }
+    public string? comment { get; set; }
 
-    public string? ReviewStatus { get; set; }
+    public DateTime created_at { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
+    public virtual booking booking { get; set; } = null!;
 
-    public virtual Booking? Booking { get; set; }
+    public virtual facility facility { get; set; } = null!;
 
-    public virtual Sleepbox? Box { get; set; }
-
-    public virtual User? Guest { get; set; }
+    public virtual user guest { get; set; } = null!;
 }

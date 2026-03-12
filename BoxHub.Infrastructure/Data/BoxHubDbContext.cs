@@ -1,94 +1,95 @@
-using BoxHub.Application.Common;
-using BoxHub.Domain.Entities;
-using BoxHub.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using BoxHub.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoxHub.Infrastructure.Data;
 
-public partial class BoxHubDbContext : DbContext, IApplicationDbContext
+public partial class BoxHubDbContext : DbContext
 {
-    public BoxHubDbContext()
-    {
-    }
-
     public BoxHubDbContext(DbContextOptions<BoxHubDbContext> options)
         : base(options)
     {
     }
 
-    public virtual DbSet<AddonService> AddonServices { get; set; }
+    public virtual DbSet<addon_service> addon_services { get; set; }
 
-    public virtual DbSet<Amenity> Amenities { get; set; }
+    public virtual DbSet<amenity> amenities { get; set; }
 
-    public virtual DbSet<AuditLog> AuditLogs { get; set; }
+    public virtual DbSet<audit_log> audit_logs { get; set; }
 
-    public virtual DbSet<Booking> Bookings { get; set; }
+    public virtual DbSet<booking> bookings { get; set; }
 
-    public virtual DbSet<BookingAddonItem> BookingAddonItems { get; set; }
+    public virtual DbSet<booking_addon_service> booking_addon_services { get; set; }
 
-    public virtual DbSet<BoxAvailability> BoxAvailabilities { get; set; }
+    public virtual DbSet<booking_box> booking_boxes { get; set; }
 
-    public virtual DbSet<Brand> Brands { get; set; }
+    public virtual DbSet<booking_status_history> booking_status_histories { get; set; }
 
-    public virtual DbSet<Commission> Commissions { get; set; }
+    public virtual DbSet<box_availability> box_availabilities { get; set; }
 
-    public virtual DbSet<Conversation> Conversations { get; set; }
+    public virtual DbSet<brand> brands { get; set; }
 
-    public virtual DbSet<Dispute> Disputes { get; set; }
+    public virtual DbSet<conversation> conversations { get; set; }
 
-    public virtual DbSet<DisputeAttachment> DisputeAttachments { get; set; }
+    public virtual DbSet<dispute> disputes { get; set; }
 
-    public virtual DbSet<Facility> Facilities { get; set; }
+    public virtual DbSet<dispute_attachment> dispute_attachments { get; set; }
 
-    public virtual DbSet<FacilityFloor> FacilityFloors { get; set; }
+    public virtual DbSet<facility> facilities { get; set; }
 
-    public virtual DbSet<HostAddonPrice> HostAddonPrices { get; set; }
+    public virtual DbSet<facility_area> facility_areas { get; set; }
 
-    public virtual DbSet<HostBasePrice> HostBasePrices { get; set; }
+    public virtual DbSet<host_addon_price> host_addon_prices { get; set; }
 
-    public virtual DbSet<HostDocument> HostDocuments { get; set; }
+    public virtual DbSet<host_base_price> host_base_prices { get; set; }
 
-    public virtual DbSet<HostPayout> HostPayouts { get; set; }
+    public virtual DbSet<host_document> host_documents { get; set; }
 
-    public virtual DbSet<HostProfile> HostProfiles { get; set; }
+    public virtual DbSet<host_payout_account> host_payout_accounts { get; set; }
 
-    public virtual DbSet<MediaAsset> MediaAssets { get; set; }
+    public virtual DbSet<host_profile> host_profiles { get; set; }
 
-    public virtual DbSet<Message> Messages { get; set; }
+    public virtual DbSet<media_asset> media_assets { get; set; }
 
-    public virtual DbSet<Notification> Notifications { get; set; }
+    public virtual DbSet<message> messages { get; set; }
 
-    public virtual DbSet<Payment> Payments { get; set; }
+    public virtual DbSet<notification> notifications { get; set; }
 
-    public virtual DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+    public virtual DbSet<payment> payments { get; set; }
 
-    public virtual DbSet<PricingCombo> PricingCombos { get; set; }
+    public virtual DbSet<payment_transaction> payment_transactions { get; set; }
 
-    public virtual DbSet<PricingFactor> PricingFactors { get; set; }
+    public virtual DbSet<platform_fee_config> platform_fee_configs { get; set; }
 
-    public virtual DbSet<Review> Reviews { get; set; }
+    public virtual DbSet<pricing_combo> pricing_combos { get; set; }
 
-    public virtual DbSet<Sleepbox> Sleepboxes { get; set; }
+    public virtual DbSet<pricing_factor> pricing_factors { get; set; }
 
-    public virtual DbSet<StaffProfile> StaffProfiles { get; set; }
+    public virtual DbSet<review> reviews { get; set; }
 
-    public virtual DbSet<SystemFee> SystemFees { get; set; }
+    public virtual DbSet<sleepbox> sleepboxes { get; set; }
 
-    public virtual DbSet<SystemPriceRule> SystemPriceRules { get; set; }
+    public virtual DbSet<staff_profile> staff_profiles { get; set; }
 
-    public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<system_policy> system_policies { get; set; }
 
-    public virtual DbSet<UserProfile> UserProfiles { get; set; }
+    public virtual DbSet<system_price_rule> system_price_rules { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseNpgsql("Host=aws-1-ap-northeast-1.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.wijgyeanvperpkddzyyy;Password=xZXlDU4hZK27nBHA;SSL Mode=Require;Trust Server Certificate=true");
+    public virtual DbSet<user> users { get; set; }
+
+    public virtual DbSet<user_favorite> user_favorites { get; set; }
+
+    public virtual DbSet<user_profile> user_profiles { get; set; }
+
+    public virtual DbSet<wallet> wallets { get; set; }
+
+    public virtual DbSet<wallet_transaction> wallet_transactions { get; set; }
+
+    public virtual DbSet<withdrawal_request> withdrawal_requests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("core");
         modelBuilder
             .HasPostgresEnum("auth", "aal_level", new[] { "aal1", "aal2", "aal3" })
             .HasPostgresEnum("auth", "code_challenge_method", new[] { "s256", "plain" })
@@ -99,8 +100,6 @@ public partial class BoxHubDbContext : DbContext, IApplicationDbContext
             .HasPostgresEnum("auth", "oauth_registration_type", new[] { "dynamic", "manual" })
             .HasPostgresEnum("auth", "oauth_response_type", new[] { "code" })
             .HasPostgresEnum("auth", "one_time_token_type", new[] { "confirmation_token", "reauthentication_token", "recovery_token", "email_change_token_new", "email_change_token_current", "phone_change_token" })
-            .HasPostgresEnum("core", "box_availability_status", new[] { "AVAILABLE", "BOOKED", "CLEANING", "MAINTENANCE" })
-            .HasPostgresEnum("core", "user_role", new[] { "GUEST", "HOST", "ADMIN", "MODERATOR", "STAFF" })
             .HasPostgresEnum("realtime", "action", new[] { "INSERT", "UPDATE", "DELETE", "TRUNCATE", "ERROR" })
             .HasPostgresEnum("realtime", "equality_op", new[] { "eq", "neq", "lt", "lte", "gt", "gte", "in" })
             .HasPostgresEnum("storage", "buckettype", new[] { "STANDARD", "ANALYTICS", "VECTOR" })
@@ -108,1098 +107,920 @@ public partial class BoxHubDbContext : DbContext, IApplicationDbContext
             .HasPostgresExtension("extensions", "pgcrypto")
             .HasPostgresExtension("extensions", "uuid-ossp")
             .HasPostgresExtension("graphql", "pg_graphql")
+            .HasPostgresExtension("btree_gist")
             .HasPostgresExtension("vault", "supabase_vault");
 
-        modelBuilder.Entity<AddonService>(entity =>
+        modelBuilder.Entity<addon_service>(entity =>
         {
-            entity.HasKey(e => e.ServiceId).HasName("addon_services_pkey");
+            entity.HasKey(e => e.service_id).HasName("addon_services_pkey");
 
-            entity.ToTable("addon_services", "core");
-
-            entity.Property(e => e.ServiceId)
-                .ValueGeneratedNever()
-                .HasColumnName("service_id");
-            entity.Property(e => e.Description).HasColumnName("description");
-            entity.Property(e => e.IsActive).HasColumnName("is_active");
-            entity.Property(e => e.MaxPrice).HasColumnName("max_price");
-            entity.Property(e => e.MinPrice).HasColumnName("min_price");
-            entity.Property(e => e.ServiceName)
-                .HasColumnType("character varying")
-                .HasColumnName("service_name");
-            entity.Property(e => e.Unit)
-                .HasColumnType("character varying")
-                .HasColumnName("unit");
+            entity.Property(e => e.service_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+            entity.Property(e => e.service_name).HasColumnType("character varying");
+            entity.Property(e => e.unit).HasColumnType("character varying");
         });
 
-        modelBuilder.Entity<Amenity>(entity =>
+        modelBuilder.Entity<amenity>(entity =>
         {
-            entity.HasKey(e => e.AmenityId).HasName("amenities_pkey");
+            entity.HasKey(e => e.amenity_id).HasName("amenities_pkey");
 
-            entity.ToTable("amenities", "core");
+            entity.HasIndex(e => e.amenity_name, "amenities_amenity_name_key").IsUnique();
 
-            entity.Property(e => e.AmenityId)
-                .ValueGeneratedNever()
-                .HasColumnName("amenity_id");
-            entity.Property(e => e.AmenityCategory)
-                .HasColumnType("character varying")
-                .HasColumnName("amenity_category");
-            entity.Property(e => e.AmenityName)
-                .HasColumnType("character varying")
-                .HasColumnName("amenity_name");
-            entity.Property(e => e.AmenityScope)
-                .HasColumnType("character varying")
-                .HasColumnName("amenity_scope");
-            entity.Property(e => e.AmenityType)
-                .HasColumnType("character varying")
-                .HasColumnName("amenity_type");
-            entity.Property(e => e.IconUrl)
-                .HasColumnType("character varying")
-                .HasColumnName("icon_url");
+            entity.Property(e => e.amenity_name).HasColumnType("character varying");
+            entity.Property(e => e.amenity_type).HasColumnType("character varying");
         });
 
-        modelBuilder.Entity<AuditLog>(entity =>
+        modelBuilder.Entity<audit_log>(entity =>
         {
-            entity.HasKey(e => e.AuditId).HasName("audit_logs_pkey");
+            entity.HasKey(e => e.audit_id).HasName("audit_logs_pkey");
 
-            entity.ToTable("audit_logs", "core");
+            entity.HasIndex(e => new { e.target_type, e.target_id }, "idx_audit_logs_target");
 
-            entity.Property(e => e.AuditId)
-                .ValueGeneratedNever()
-                .HasColumnName("audit_id");
-            entity.Property(e => e.Action)
-                .HasColumnType("character varying")
-                .HasColumnName("action");
-            entity.Property(e => e.ActorId).HasColumnName("actor_id");
-            entity.Property(e => e.ActorRole)
-                .HasColumnType("character varying")
-                .HasColumnName("actor_role");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.NewValue).HasColumnName("new_value");
-            entity.Property(e => e.Note)
-                .HasColumnType("character varying")
-                .HasColumnName("note");
-            entity.Property(e => e.OldValue).HasColumnName("old_value");
-            entity.Property(e => e.TargetId).HasColumnName("target_id");
-            entity.Property(e => e.TargetType)
-                .HasColumnType("character varying")
-                .HasColumnName("target_type");
+            entity.Property(e => e.audit_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.action).HasColumnType("character varying");
+            entity.Property(e => e.actor_role).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.note).HasColumnType("character varying");
+            entity.Property(e => e.target_type).HasColumnType("character varying");
 
-            entity.HasOne(d => d.Actor).WithMany(p => p.AuditLogs)
-                .HasForeignKey(d => d.ActorId)
+            entity.HasOne(d => d.actor).WithMany(p => p.audit_logs)
+                .HasForeignKey(d => d.actor_id)
                 .HasConstraintName("audit_logs_actor_id_fkey");
         });
 
-        modelBuilder.Entity<Booking>(entity =>
+        modelBuilder.Entity<booking>(entity =>
         {
-            entity.HasKey(e => e.BookingId).HasName("bookings_pkey");
+            entity.HasKey(e => e.booking_id).HasName("bookings_pkey");
 
-            entity.ToTable("bookings", "core");
+            entity.HasIndex(e => e.booking_code, "bookings_booking_code_key").IsUnique();
 
-            entity.HasIndex(e => e.BookingCode, "bookings_booking_code_key").IsUnique();
+            entity.HasIndex(e => e.check_in, "idx_bookings_check_in");
 
-            entity.HasIndex(e => e.GuestId, "idx_bookings_guest");
+            entity.HasIndex(e => e.check_out, "idx_bookings_check_out");
 
-            entity.Property(e => e.BookingId)
-                .ValueGeneratedNever()
-                .HasColumnName("booking_id");
-            entity.Property(e => e.ActualCheckIn)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("actual_check_in");
-            entity.Property(e => e.ActualCheckOut)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("actual_check_out");
-            entity.Property(e => e.BookingCode)
-                .HasColumnType("character varying")
-                .HasColumnName("booking_code");
-            entity.Property(e => e.BookingStatus)
-                .HasColumnType("character varying")
-                .HasColumnName("booking_status");
-            entity.Property(e => e.BoxId).HasColumnName("box_id");
-            entity.Property(e => e.CancelledAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("cancelled_at");
-            entity.Property(e => e.CancelledById).HasColumnName("cancelled_by_id");
-            entity.Property(e => e.CheckIn)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("check_in");
-            entity.Property(e => e.CheckOut)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("check_out");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.FinalAmount).HasColumnName("final_amount");
-            entity.Property(e => e.GuestId).HasColumnName("guest_id");
-            entity.Property(e => e.PaymentStatus)
-                .HasColumnType("character varying")
-                .HasColumnName("payment_status");
-            entity.Property(e => e.TotalAmenityPrice).HasColumnName("total_amenity_price");
-            entity.Property(e => e.TotalBoxPrice).HasColumnName("total_box_price");
-            entity.Property(e => e.TotalPlatformFee).HasColumnName("total_platform_fee");
+            entity.HasIndex(e => new { e.facility_id, e.check_in }, "idx_bookings_facility_check_in");
 
-            entity.HasOne(d => d.Box).WithMany(p => p.Bookings)
-                .HasForeignKey(d => d.BoxId)
-                .HasConstraintName("bookings_box_id_fkey");
+            entity.HasIndex(e => new { e.guest_id, e.created_at }, "idx_bookings_guest_created");
 
-            entity.HasOne(d => d.CancelledBy).WithMany(p => p.BookingCancelledBies)
-                .HasForeignKey(d => d.CancelledById)
+            entity.HasIndex(e => new { e.host_id, e.created_at }, "idx_bookings_host_created");
+
+            entity.HasIndex(e => e.booking_status, "idx_bookings_status");
+
+            entity.Property(e => e.booking_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.booking_code).HasColumnType("character varying");
+            entity.Property(e => e.booking_status).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.payment_status).HasColumnType("character varying");
+            entity.Property(e => e.pricing_snapshot).HasColumnType("jsonb");
+
+            entity.HasOne(d => d.cancelled_by).WithMany(p => p.bookingcancelled_bies)
+                .HasForeignKey(d => d.cancelled_by_id)
                 .HasConstraintName("bookings_cancelled_by_id_fkey");
 
-            entity.HasOne(d => d.Guest).WithMany(p => p.BookingGuests)
-                .HasForeignKey(d => d.GuestId)
+            entity.HasOne(d => d.facility).WithMany(p => p.bookings)
+                .HasForeignKey(d => d.facility_id)
+                .HasConstraintName("bookings_facility_id_fkey");
+
+            entity.HasOne(d => d.guest).WithMany(p => p.bookingguests)
+                .HasForeignKey(d => d.guest_id)
                 .HasConstraintName("bookings_guest_id_fkey");
+
+            entity.HasOne(d => d.host).WithMany(p => p.bookings)
+                .HasForeignKey(d => d.host_id)
+                .HasConstraintName("bookings_host_id_fkey");
         });
 
-        modelBuilder.Entity<BookingAddonItem>(entity =>
+        modelBuilder.Entity<booking_addon_service>(entity =>
         {
-            entity.HasKey(e => e.BookingAddonId).HasName("booking_addon_items_pkey");
+            entity.HasKey(e => e.booking_addon_id).HasName("booking_addon_services_pkey");
 
-            entity.ToTable("booking_addon_items", "core");
+            entity.HasIndex(e => e.booking_id, "idx_booking_addons_booking");
 
-            entity.HasIndex(e => new { e.BookingId, e.ServiceId }, "booking_addon_items_booking_id_service_id_key").IsUnique();
+            entity.Property(e => e.booking_addon_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.service_name).HasColumnType("character varying");
 
-            entity.HasIndex(e => e.BookingId, "idx_booking_addon_booking");
+            entity.HasOne(d => d.booking).WithMany(p => p.booking_addon_services)
+                .HasForeignKey(d => d.booking_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("booking_addon_services_booking_id_fkey");
 
-            entity.Property(e => e.BookingAddonId)
-                .ValueGeneratedNever()
-                .HasColumnName("booking_addon_id");
-            entity.Property(e => e.BookingId).HasColumnName("booking_id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.Quantity).HasColumnName("quantity");
-            entity.Property(e => e.ServiceId).HasColumnName("service_id");
-            entity.Property(e => e.TotalPrice).HasColumnName("total_price");
-            entity.Property(e => e.UnitPrice).HasColumnName("unit_price");
-
-            entity.HasOne(d => d.Booking).WithMany(p => p.BookingAddonItems)
-                .HasForeignKey(d => d.BookingId)
-                .HasConstraintName("booking_addon_items_booking_id_fkey");
-
-            entity.HasOne(d => d.Service).WithMany(p => p.BookingAddonItems)
-                .HasForeignKey(d => d.ServiceId)
-                .HasConstraintName("booking_addon_items_service_id_fkey");
+            entity.HasOne(d => d.service).WithMany(p => p.booking_addon_services)
+                .HasForeignKey(d => d.service_id)
+                .HasConstraintName("booking_addon_services_service_id_fkey");
         });
 
-        modelBuilder.Entity<BoxAvailability>(entity =>
+        modelBuilder.Entity<booking_box>(entity =>
         {
-            entity.HasKey(e => e.AvailabilityId).HasName("box_availability_pkey");
+            entity.HasKey(e => e.booking_box_id).HasName("booking_boxes_pkey");
 
-            entity.ToTable("box_availability", "core");
+            entity.HasIndex(e => e.booking_id, "idx_booking_boxes_booking");
 
-            entity.Property(e => e.AvailabilityId)
-                .ValueGeneratedNever()
-                .HasColumnName("availability_id");
-            entity.Property(e => e.BookingId).HasColumnName("booking_id");
-            entity.Property(e => e.BoxId).HasColumnName("box_id");
-            entity.Property(e => e.EndTime)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("end_time");
-            entity.Property(e => e.StartTime)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("start_time");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("updated_at");
+            entity.HasIndex(e => e.box_id, "idx_booking_boxes_box");
 
-            entity.HasOne(d => d.Booking).WithMany(p => p.BoxAvailabilities)
-                .HasForeignKey(d => d.BookingId)
-                .HasConstraintName("box_availability_booking_id_fkey");
+            entity.Property(e => e.booking_box_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.box_name_snapshot).HasColumnType("character varying");
+            entity.Property(e => e.box_type_snapshot).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
 
-            entity.HasOne(d => d.Box).WithMany(p => p.BoxAvailabilities)
-                .HasForeignKey(d => d.BoxId)
-                .HasConstraintName("box_availability_box_id_fkey");
+            entity.HasOne(d => d.booking).WithMany(p => p.booking_boxes)
+                .HasForeignKey(d => d.booking_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("booking_boxes_booking_id_fkey");
+
+            entity.HasOne(d => d.box).WithMany(p => p.booking_boxes)
+                .HasForeignKey(d => d.box_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("booking_boxes_box_id_fkey");
         });
 
-        modelBuilder.Entity<Brand>(entity =>
+        modelBuilder.Entity<booking_status_history>(entity =>
         {
-            entity.HasKey(e => e.BrandId).HasName("brands_pkey");
+            entity.HasKey(e => e.history_id).HasName("booking_status_history_pkey");
 
-            entity.ToTable("brands", "core");
+            entity.ToTable("booking_status_history");
 
-            entity.Property(e => e.BrandId)
-                .ValueGeneratedNever()
-                .HasColumnName("brand_id");
-            entity.Property(e => e.BrandAvatar)
-                .HasColumnType("character varying")
-                .HasColumnName("brand_avatar");
-            entity.Property(e => e.BrandName)
-                .HasColumnType("character varying")
-                .HasColumnName("brand_name");
-            entity.Property(e => e.HostId).HasColumnName("host_id");
+            entity.HasIndex(e => new { e.booking_id, e.changed_at }, "idx_booking_status_history_booking").IsDescending(false, true);
 
-            entity.HasOne(d => d.Host).WithMany(p => p.Brands)
-                .HasForeignKey(d => d.HostId)
+            entity.Property(e => e.history_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.changed_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.new_status).HasColumnType("character varying");
+            entity.Property(e => e.note).HasColumnType("character varying");
+            entity.Property(e => e.old_status).HasColumnType("character varying");
+
+            entity.HasOne(d => d.booking).WithMany(p => p.booking_status_histories)
+                .HasForeignKey(d => d.booking_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("booking_status_history_booking_id_fkey");
+
+            entity.HasOne(d => d.payment).WithMany(p => p.booking_status_histories)
+                .HasForeignKey(d => d.payment_id)
+                .HasConstraintName("booking_status_history_payment_id_fkey");
+        });
+
+        modelBuilder.Entity<box_availability>(entity =>
+        {
+            entity.HasKey(e => e.availability_id).HasName("box_availability_pkey");
+
+            entity.ToTable("box_availability");
+
+            entity.HasIndex(e => new { e.facility_id, e.start_time, e.end_time }, "idx_box_availability_facility_time");
+
+            entity.HasIndex(e => new { e.availability_status, e.locked_until }, "idx_box_availability_status");
+
+            entity.Property(e => e.availability_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.availability_status).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+
+            entity.HasOne(d => d.booking).WithMany(p => p.box_availabilities)
+                .HasForeignKey(d => d.booking_id)
+                .HasConstraintName("fk_box_availability_booking");
+
+            entity.HasOne(d => d.box).WithMany(p => p.box_availabilities)
+                .HasForeignKey(d => d.box_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_box_availability_box");
+
+            entity.HasOne(d => d.facility).WithMany(p => p.box_availabilities)
+                .HasForeignKey(d => d.facility_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_box_availability_facility");
+        });
+
+        modelBuilder.Entity<brand>(entity =>
+        {
+            entity.HasKey(e => e.brand_id).HasName("brands_pkey");
+
+            entity.HasIndex(e => e.host_id, "idx_brands_host");
+
+            entity.HasIndex(e => new { e.host_id, e.brand_name }, "ux_host_brand_name").IsUnique();
+
+            entity.Property(e => e.brand_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.brand_avatar).HasColumnType("character varying");
+            entity.Property(e => e.brand_name).HasColumnType("character varying");
+            entity.Property(e => e.updated_at).HasDefaultValueSql("now()");
+
+            entity.HasOne(d => d.host).WithMany(p => p.brands)
+                .HasForeignKey(d => d.host_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("brands_host_id_fkey");
         });
 
-        modelBuilder.Entity<Commission>(entity =>
+        modelBuilder.Entity<conversation>(entity =>
         {
-            entity.HasKey(e => e.CommissionId).HasName("commissions_pkey");
+            entity.HasKey(e => e.conversation_id).HasName("conversations_pkey");
 
-            entity.ToTable("commissions", "core");
+            entity.HasIndex(e => e.guest_id, "idx_conversations_guest");
 
-            entity.Property(e => e.CommissionId)
-                .ValueGeneratedNever()
-                .HasColumnName("commission_id");
-            entity.Property(e => e.EffectiveFrom)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("effective_from");
-            entity.Property(e => e.EffectiveTo)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("effective_to");
-            entity.Property(e => e.IsActive).HasColumnName("is_active");
-            entity.Property(e => e.Percentage).HasColumnName("percentage");
-        });
+            entity.HasIndex(e => e.host_id, "idx_conversations_host");
 
-        modelBuilder.Entity<Conversation>(entity =>
-        {
-            entity.HasKey(e => e.ConversationId).HasName("conversations_pkey");
+            entity.HasIndex(e => e.staff_id, "idx_conversations_staff");
 
-            entity.ToTable("conversations", "core");
+            entity.Property(e => e.conversation_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.conversation_type).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
 
-            entity.Property(e => e.ConversationId)
-                .ValueGeneratedNever()
-                .HasColumnName("conversation_id");
-            entity.Property(e => e.BookingId).HasColumnName("booking_id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.FacilityId).HasColumnName("facility_id");
-            entity.Property(e => e.GuestId).HasColumnName("guest_id");
-            entity.Property(e => e.HostId).HasColumnName("host_id");
-            entity.Property(e => e.LastMessageAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("last_message_at");
-            entity.Property(e => e.StaffId).HasColumnName("staff_id");
-
-            entity.HasOne(d => d.Booking).WithMany(p => p.Conversations)
-                .HasForeignKey(d => d.BookingId)
+            entity.HasOne(d => d.booking).WithMany(p => p.conversations)
+                .HasForeignKey(d => d.booking_id)
                 .HasConstraintName("conversations_booking_id_fkey");
 
-            entity.HasOne(d => d.Facility).WithMany(p => p.Conversations)
-                .HasForeignKey(d => d.FacilityId)
+            entity.HasOne(d => d.facility).WithMany(p => p.conversations)
+                .HasForeignKey(d => d.facility_id)
                 .HasConstraintName("conversations_facility_id_fkey");
 
-            entity.HasOne(d => d.Guest).WithMany(p => p.Conversations)
-                .HasForeignKey(d => d.GuestId)
+            entity.HasOne(d => d.guest).WithMany(p => p.conversations)
+                .HasForeignKey(d => d.guest_id)
                 .HasConstraintName("conversations_guest_id_fkey");
 
-            entity.HasOne(d => d.Host).WithMany(p => p.Conversations)
-                .HasForeignKey(d => d.HostId)
+            entity.HasOne(d => d.host).WithMany(p => p.conversations)
+                .HasForeignKey(d => d.host_id)
                 .HasConstraintName("conversations_host_id_fkey");
 
-            entity.HasOne(d => d.Staff).WithMany(p => p.Conversations)
-                .HasForeignKey(d => d.StaffId)
+            entity.HasOne(d => d.staff).WithMany(p => p.conversations)
+                .HasForeignKey(d => d.staff_id)
                 .HasConstraintName("conversations_staff_id_fkey");
         });
 
-        modelBuilder.Entity<Dispute>(entity =>
+        modelBuilder.Entity<dispute>(entity =>
         {
-            entity.HasKey(e => e.DisputeId).HasName("disputes_pkey");
+            entity.HasKey(e => e.dispute_id).HasName("disputes_pkey");
 
-            entity.ToTable("disputes", "core");
-
-            entity.Property(e => e.DisputeId)
-                .ValueGeneratedNever()
-                .HasColumnName("dispute_id");
-            entity.Property(e => e.AdminApprovalId).HasColumnName("admin_approval_id");
-            entity.Property(e => e.AssignedModeratorId).HasColumnName("assigned_moderator_id");
-            entity.Property(e => e.BookingId).HasColumnName("booking_id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.Description).HasColumnName("description");
-            entity.Property(e => e.DisputeType)
-                .HasColumnType("character varying")
-                .HasColumnName("dispute_type");
-            entity.Property(e => e.ModeratorNote).HasColumnName("moderator_note");
-            entity.Property(e => e.RaisedBy).HasColumnName("raised_by");
-            entity.Property(e => e.RefundAmount)
-                .HasDefaultValueSql("0")
-                .HasColumnName("refund_amount");
-            entity.Property(e => e.ResolutionType)
-                .HasColumnType("character varying")
-                .HasColumnName("resolution_type");
-            entity.Property(e => e.ResolvedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("resolved_at");
-            entity.Property(e => e.Status)
+            entity.Property(e => e.dispute_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.dispute_type).HasColumnType("character varying");
+            entity.Property(e => e.refund_amount)
+                .HasPrecision(12, 2)
+                .HasDefaultValueSql("0");
+            entity.Property(e => e.resolution_type).HasColumnType("character varying");
+            entity.Property(e => e.status)
                 .HasDefaultValueSql("'PENDING'::character varying")
-                .HasColumnType("character varying")
-                .HasColumnName("status");
+                .HasColumnType("character varying");
 
-            entity.HasOne(d => d.AdminApproval).WithMany(p => p.DisputeAdminApprovals)
-                .HasForeignKey(d => d.AdminApprovalId)
+            entity.HasOne(d => d.admin_approval).WithMany(p => p.disputeadmin_approvals)
+                .HasForeignKey(d => d.admin_approval_id)
                 .HasConstraintName("disputes_admin_approval_id_fkey");
 
-            entity.HasOne(d => d.AssignedModerator).WithMany(p => p.DisputeAssignedModerators)
-                .HasForeignKey(d => d.AssignedModeratorId)
+            entity.HasOne(d => d.assigned_moderator).WithMany(p => p.disputeassigned_moderators)
+                .HasForeignKey(d => d.assigned_moderator_id)
                 .HasConstraintName("disputes_assigned_moderator_id_fkey");
 
-            entity.HasOne(d => d.Booking).WithMany(p => p.Disputes)
-                .HasForeignKey(d => d.BookingId)
+            entity.HasOne(d => d.booking).WithMany(p => p.disputes)
+                .HasForeignKey(d => d.booking_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("disputes_booking_id_fkey");
 
-            entity.HasOne(d => d.RaisedByNavigation).WithMany(p => p.DisputeRaisedByNavigations)
-                .HasForeignKey(d => d.RaisedBy)
+            entity.HasOne(d => d.raised_byNavigation).WithMany(p => p.disputeraised_byNavigations)
+                .HasForeignKey(d => d.raised_by)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("disputes_raised_by_fkey");
         });
 
-        modelBuilder.Entity<DisputeAttachment>(entity =>
+        modelBuilder.Entity<dispute_attachment>(entity =>
         {
-            entity.HasKey(e => e.AttachmentId).HasName("dispute_attachments_pkey");
+            entity.HasKey(e => e.attachment_id).HasName("dispute_attachments_pkey");
 
-            entity.ToTable("dispute_attachments", "core");
+            entity.Property(e => e.attachment_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.attachment_role).HasColumnType("character varying");
+            entity.Property(e => e.file_type).HasColumnType("character varying");
+            entity.Property(e => e.file_url).HasColumnType("character varying");
+            entity.Property(e => e.uploaded_at).HasDefaultValueSql("now()");
 
-            entity.Property(e => e.AttachmentId)
-                .ValueGeneratedNever()
-                .HasColumnName("attachment_id");
-            entity.Property(e => e.AttachmentRole)
-                .HasColumnType("character varying")
-                .HasColumnName("attachment_role");
-            entity.Property(e => e.DisputeId).HasColumnName("dispute_id");
-            entity.Property(e => e.FileType)
-                .HasColumnType("character varying")
-                .HasColumnName("file_type");
-            entity.Property(e => e.FileUrl)
-                .HasColumnType("character varying")
-                .HasColumnName("file_url");
-            entity.Property(e => e.UploadedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("uploaded_at");
-            entity.Property(e => e.UploadedBy).HasColumnName("uploaded_by");
-
-            entity.HasOne(d => d.Dispute).WithMany(p => p.DisputeAttachments)
-                .HasForeignKey(d => d.DisputeId)
+            entity.HasOne(d => d.dispute).WithMany(p => p.dispute_attachments)
+                .HasForeignKey(d => d.dispute_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("dispute_attachments_dispute_id_fkey");
 
-            entity.HasOne(d => d.UploadedByNavigation).WithMany(p => p.DisputeAttachments)
-                .HasForeignKey(d => d.UploadedBy)
+            entity.HasOne(d => d.uploaded_byNavigation).WithMany(p => p.dispute_attachments)
+                .HasForeignKey(d => d.uploaded_by)
                 .HasConstraintName("dispute_attachments_uploaded_by_fkey");
         });
 
-        modelBuilder.Entity<Facility>(entity =>
+        modelBuilder.Entity<facility>(entity =>
         {
-            entity.HasKey(e => e.FacilityId).HasName("facilities_pkey");
+            entity.HasKey(e => e.facility_id).HasName("facilities_pkey");
 
-            entity.ToTable("facilities", "core");
+            entity.HasIndex(e => new { e.latitude, e.longitude }, "idx_facilities_location");
 
-            entity.Property(e => e.FacilityId)
-                .ValueGeneratedNever()
-                .HasColumnName("facility_id");
-            entity.Property(e => e.AddressCity)
-                .HasColumnType("character varying")
-                .HasColumnName("address_city");
-            entity.Property(e => e.AddressDistrict)
-                .HasColumnType("character varying")
-                .HasColumnName("address_district");
-            entity.Property(e => e.AddressStreet)
-                .HasColumnType("character varying")
-                .HasColumnName("address_street");
-            entity.Property(e => e.AddressWard)
-                .HasColumnType("character varying")
-                .HasColumnName("address_ward");
-            entity.Property(e => e.BrandId).HasColumnName("brand_id");
-            entity.Property(e => e.Description).HasColumnName("description");
-            entity.Property(e => e.FacilityName)
-                .HasColumnType("character varying")
-                .HasColumnName("facility_name");
-            entity.Property(e => e.FacilityStatus)
-                .HasColumnType("character varying")
-                .HasColumnName("facility_status");
-            entity.Property(e => e.HouseRules).HasColumnName("house_rules");
-            entity.Property(e => e.Latitude)
-                .HasPrecision(11, 9)
-                .HasColumnName("latitude");
-            entity.Property(e => e.Longitude)
-                .HasPrecision(11, 9)
-                .HasColumnName("longitude");
-
-            entity.HasOne(d => d.Brand).WithMany(p => p.Facilities)
-                .HasForeignKey(d => d.BrandId)
-                .HasConstraintName("facilities_brand_id_fkey");
-        });
-
-        modelBuilder.Entity<FacilityFloor>(entity =>
-        {
-            entity.HasKey(e => e.FloorId).HasName("facility_floors_pkey");
-
-            entity.ToTable("facility_floors", "core");
-
-            entity.Property(e => e.FloorId)
-                .ValueGeneratedNever()
-                .HasColumnName("floor_id");
-            entity.Property(e => e.Description).HasColumnName("description");
-            entity.Property(e => e.FacilityId).HasColumnName("facility_id");
-            entity.Property(e => e.FloorAmenities)
-                .HasColumnType("json")
-                .HasColumnName("floor_amenities");
-            entity.Property(e => e.FloorName)
-                .HasColumnType("character varying")
-                .HasColumnName("floor_name");
-
-            entity.HasOne(d => d.Facility).WithMany(p => p.FacilityFloors)
-                .HasForeignKey(d => d.FacilityId)
-                .HasConstraintName("facility_floors_facility_id_fkey");
-        });
-
-        modelBuilder.Entity<HostAddonPrice>(entity =>
-        {
-            entity.HasKey(e => e.HostServiceId).HasName("host_addon_prices_pkey");
-
-            entity.ToTable("host_addon_prices", "core");
-
-            entity.Property(e => e.HostServiceId)
-                .ValueGeneratedNever()
-                .HasColumnName("host_service_id");
-            entity.Property(e => e.FacilityId).HasColumnName("facility_id");
-            entity.Property(e => e.IsActive).HasColumnName("is_active");
-            entity.Property(e => e.Price).HasColumnName("price");
-            entity.Property(e => e.ServiceId).HasColumnName("service_id");
-
-            entity.HasOne(d => d.Facility).WithMany(p => p.HostAddonPrices)
-                .HasForeignKey(d => d.FacilityId)
-                .HasConstraintName("host_addon_prices_facility_id_fkey");
-
-            entity.HasOne(d => d.Service).WithMany(p => p.HostAddonPrices)
-                .HasForeignKey(d => d.ServiceId)
-                .HasConstraintName("host_addon_prices_service_id_fkey");
-        });
-
-        modelBuilder.Entity<HostBasePrice>(entity =>
-        {
-            entity.HasKey(e => e.HostPriceId).HasName("host_base_prices_pkey");
-
-            entity.ToTable("host_base_prices", "core");
-
-            entity.Property(e => e.HostPriceId)
-                .ValueGeneratedNever()
-                .HasColumnName("host_price_id");
-            entity.Property(e => e.AppliedLocationCode)
-                .HasColumnType("character varying")
-                .HasColumnName("applied_location_code");
-            entity.Property(e => e.BaseHourPrice).HasColumnName("base_hour_price");
-            entity.Property(e => e.BaseOvernightPrice).HasColumnName("base_overnight_price");
-            entity.Property(e => e.BoxType)
-                .HasColumnType("character varying")
-                .HasColumnName("box_type");
-            entity.Property(e => e.FacilityId).HasColumnName("facility_id");
-            entity.Property(e => e.IsActive).HasColumnName("is_active");
-
-            entity.HasOne(d => d.Facility).WithMany(p => p.HostBasePrices)
-                .HasForeignKey(d => d.FacilityId)
-                .HasConstraintName("host_base_prices_facility_id_fkey");
-        });
-
-        modelBuilder.Entity<HostDocument>(entity =>
-        {
-            entity.HasKey(e => e.DocumentId).HasName("host_documents_pkey");
-
-            entity.ToTable("host_documents", "core");
-
-            entity.Property(e => e.DocumentId)
-                .ValueGeneratedNever()
-                .HasColumnName("document_id");
-            entity.Property(e => e.DocumentStatus)
-                .HasColumnType("character varying")
-                .HasColumnName("document_status");
-            entity.Property(e => e.DocumentType)
-                .HasColumnType("character varying")
-                .HasColumnName("document_type");
-            entity.Property(e => e.ExpiryDate).HasColumnName("expiry_date");
-            entity.Property(e => e.FileName)
-                .HasColumnType("character varying")
-                .HasColumnName("file_name");
-            entity.Property(e => e.FileType)
-                .HasColumnType("character varying")
-                .HasColumnName("file_type");
-            entity.Property(e => e.FileUrl)
-                .HasColumnType("character varying")
-                .HasColumnName("file_url");
-            entity.Property(e => e.HostId).HasColumnName("host_id");
-            entity.Property(e => e.RejectReason)
-                .HasColumnType("character varying")
-                .HasColumnName("reject_reason");
-            entity.Property(e => e.ReviewedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("reviewed_at");
-            entity.Property(e => e.ReviewedBy).HasColumnName("reviewed_by");
-            entity.Property(e => e.UploadedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("uploaded_at");
-
-            entity.HasOne(d => d.Host).WithMany(p => p.HostDocuments)
-                .HasForeignKey(d => d.HostId)
-                .HasConstraintName("host_documents_host_id_fkey");
-
-            entity.HasOne(d => d.ReviewedByNavigation).WithMany(p => p.HostDocuments)
-                .HasForeignKey(d => d.ReviewedBy)
-                .HasConstraintName("host_documents_reviewed_by_fkey");
-        });
-
-        modelBuilder.Entity<HostPayout>(entity =>
-        {
-            entity.HasKey(e => e.PayoutId).HasName("host_payouts_pkey");
-
-            entity.ToTable("host_payouts", "core");
-
-            entity.Property(e => e.PayoutId)
-                .ValueGeneratedNever()
-                .HasColumnName("payout_id");
-            entity.Property(e => e.BookingId).HasColumnName("booking_id");
-            entity.Property(e => e.CommissionAmount).HasColumnName("commission_amount");
-            entity.Property(e => e.CommissionId).HasColumnName("commission_id");
-            entity.Property(e => e.GrossAmount).HasColumnName("gross_amount");
-            entity.Property(e => e.HostId).HasColumnName("host_id");
-            entity.Property(e => e.NetAmount).HasColumnName("net_amount");
-            entity.Property(e => e.PaidAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("paid_at");
-            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
-            entity.Property(e => e.PayoutStatus)
-                .HasColumnType("character varying")
-                .HasColumnName("payout_status");
-
-            entity.HasOne(d => d.Booking).WithMany(p => p.HostPayouts)
-                .HasForeignKey(d => d.BookingId)
-                .HasConstraintName("host_payouts_booking_id_fkey");
-
-            entity.HasOne(d => d.Commission).WithMany(p => p.HostPayouts)
-                .HasForeignKey(d => d.CommissionId)
-                .HasConstraintName("host_payouts_commission_id_fkey");
-
-            entity.HasOne(d => d.Host).WithMany(p => p.HostPayouts)
-                .HasForeignKey(d => d.HostId)
-                .HasConstraintName("host_payouts_host_id_fkey");
-
-            entity.HasOne(d => d.Payment).WithMany(p => p.HostPayouts)
-                .HasForeignKey(d => d.PaymentId)
-                .HasConstraintName("host_payouts_payment_id_fkey");
-        });
-
-        modelBuilder.Entity<HostProfile>(entity =>
-        {
-            entity.HasKey(e => e.HostId).HasName("host_profiles_pkey");
-
-            entity.ToTable("host_profiles", "core");
-
-            entity.HasIndex(e => e.UserId, "host_profiles_user_id_key").IsUnique();
-
-            entity.Property(e => e.HostId)
-                .ValueGeneratedNever()
-                .HasColumnName("host_id");
-            entity.Property(e => e.BrandName)
-                .HasColumnType("character varying")
-                .HasColumnName("brand_name");
-            entity.Property(e => e.BusinessAddress)
-                .HasColumnType("character varying")
-                .HasColumnName("business_address");
-            entity.Property(e => e.BusinessCity)
-                .HasColumnType("character varying")
-                .HasColumnName("business_city");
-            entity.Property(e => e.BusinessDistrict)
-                .HasColumnType("character varying")
-                .HasColumnName("business_district");
-            entity.Property(e => e.BusinessWard)
-                .HasColumnType("character varying")
-                .HasColumnName("business_ward");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.RepresentativeIdNumber)
-                .HasColumnType("character varying")
-                .HasColumnName("representative_id_number");
-            entity.Property(e => e.RepresentativeName)
-                .HasColumnType("character varying")
-                .HasColumnName("representative_name");
-            entity.Property(e => e.TaxCode)
-                .HasColumnType("character varying")
-                .HasColumnName("tax_code");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("updated_at");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
-            entity.Property(e => e.VerifiedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("verified_at");
-            entity.Property(e => e.VerifiedStatus)
+            entity.Property(e => e.facility_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.address_city).HasColumnType("character varying");
+            entity.Property(e => e.address_district).HasColumnType("character varying");
+            entity.Property(e => e.address_street).HasColumnType("character varying");
+            entity.Property(e => e.address_ward).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.facility_name).HasColumnType("character varying");
+            entity.Property(e => e.facility_status)
                 .HasDefaultValueSql("'PENDING'::character varying")
-                .HasColumnType("character varying")
-                .HasColumnName("verified_status");
+                .HasColumnType("character varying");
+            entity.Property(e => e.latitude).HasPrecision(11, 9);
+            entity.Property(e => e.longitude).HasPrecision(11, 9);
 
-            entity.HasOne(d => d.User).WithOne(p => p.HostProfile)
-                .HasForeignKey<HostProfile>(d => d.UserId)
-                .HasConstraintName("host_profiles_user_id_fkey");
-        });
+            entity.HasOne(d => d.brand).WithMany(p => p.facilities)
+                .HasForeignKey(d => d.brand_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("facilities_brand_id_fkey");
 
-        modelBuilder.Entity<MediaAsset>(entity =>
-        {
-            entity.HasKey(e => e.MediaId).HasName("media_assets_pkey");
-
-            entity.ToTable("media_assets", "core");
-
-            entity.Property(e => e.MediaId)
-                .ValueGeneratedNever()
-                .HasColumnName("media_id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.DisplayOrder).HasColumnName("display_order");
-            entity.Property(e => e.IsCover).HasColumnName("is_cover");
-            entity.Property(e => e.MediaType)
-                .HasColumnType("character varying")
-                .HasColumnName("media_type");
-            entity.Property(e => e.MediaUrl)
-                .HasColumnType("character varying")
-                .HasColumnName("media_url");
-            entity.Property(e => e.TargetId).HasColumnName("target_id");
-            entity.Property(e => e.ThumbnailUrl)
-                .HasColumnType("character varying")
-                .HasColumnName("thumbnail_url");
-
-            entity.HasOne(d => d.Target).WithMany(p => p.MediaAssets)
-                .HasForeignKey(d => d.TargetId)
-                .HasConstraintName("media_assets_target_id_fkey");
-        });
-
-        modelBuilder.Entity<Message>(entity =>
-        {
-            entity.HasKey(e => e.MessageId).HasName("messages_pkey");
-
-            entity.ToTable("messages", "core");
-
-            entity.Property(e => e.MessageId)
-                .ValueGeneratedNever()
-                .HasColumnName("message_id");
-            entity.Property(e => e.Content).HasColumnName("content");
-            entity.Property(e => e.ConversationId).HasColumnName("conversation_id");
-            entity.Property(e => e.IsRead).HasColumnName("is_read");
-            entity.Property(e => e.SenderId).HasColumnName("sender_id");
-            entity.Property(e => e.SentAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("sent_at");
-
-            entity.HasOne(d => d.Conversation).WithMany(p => p.Messages)
-                .HasForeignKey(d => d.ConversationId)
-                .HasConstraintName("messages_conversation_id_fkey");
-
-            entity.HasOne(d => d.Sender).WithMany(p => p.Messages)
-                .HasForeignKey(d => d.SenderId)
-                .HasConstraintName("messages_sender_id_fkey");
-        });
-
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.HasKey(e => e.NotificationId).HasName("notifications_pkey");
-
-            entity.ToTable("notifications", "core");
-
-            entity.Property(e => e.NotificationId)
-                .ValueGeneratedNever()
-                .HasColumnName("notification_id");
-            entity.Property(e => e.Content).HasColumnName("content");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.IsRead).HasColumnName("is_read");
-            entity.Property(e => e.NotificationType)
-                .HasColumnType("character varying")
-                .HasColumnName("notification_type");
-            entity.Property(e => e.Title)
-                .HasColumnType("character varying")
-                .HasColumnName("title");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("notifications_user_id_fkey");
-        });
-
-        modelBuilder.Entity<Payment>(entity =>
-        {
-            entity.HasKey(e => e.PaymentId).HasName("payments_pkey");
-
-            entity.ToTable("payments", "core");
-
-            entity.HasIndex(e => e.BookingId, "idx_payments_booking");
-
-            entity.HasIndex(e => e.ClientRequestId, "payments_client_request_id_key").IsUnique();
-
-            entity.Property(e => e.PaymentId)
-                .ValueGeneratedNever()
-                .HasColumnName("payment_id");
-            entity.Property(e => e.Amount).HasColumnName("amount");
-            entity.Property(e => e.BookingId).HasColumnName("booking_id");
-            entity.Property(e => e.ClientRequestId)
-                .HasColumnType("character varying")
-                .HasColumnName("client_request_id");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.PaymentStatus)
-                .HasColumnType("character varying")
-                .HasColumnName("payment_status");
-            entity.Property(e => e.PaymentType)
-                .HasColumnType("character varying")
-                .HasColumnName("payment_type");
-            entity.Property(e => e.ReferenceNote)
-                .HasColumnType("character varying")
-                .HasColumnName("reference_note");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("updated_at");
-
-            entity.HasOne(d => d.Booking).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.BookingId)
-                .HasConstraintName("payments_booking_id_fkey");
-        });
-
-        modelBuilder.Entity<PaymentTransaction>(entity =>
-        {
-            entity.HasKey(e => e.TransactionId).HasName("payment_transactions_pkey");
-
-            entity.ToTable("payment_transactions", "core");
-
-            entity.Property(e => e.TransactionId)
-                .ValueGeneratedNever()
-                .HasColumnName("transaction_id");
-            entity.Property(e => e.CallbackPayload).HasColumnName("callback_payload");
-            entity.Property(e => e.CallbackReceivedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("callback_received_at");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.Environment)
-                .HasColumnType("character varying")
-                .HasColumnName("environment");
-            entity.Property(e => e.GatewayTransactionId)
-                .HasColumnType("character varying")
-                .HasColumnName("gateway_transaction_id");
-            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
-            entity.Property(e => e.Provider)
-                .HasColumnType("character varying")
-                .HasColumnName("provider");
-            entity.Property(e => e.RequestType)
-                .HasColumnType("character varying")
-                .HasColumnName("request_type");
-            entity.Property(e => e.TransactionStatus)
-                .HasColumnType("character varying")
-                .HasColumnName("transaction_status");
-
-            entity.HasOne(d => d.Payment).WithMany(p => p.PaymentTransactions)
-                .HasForeignKey(d => d.PaymentId)
-                .HasConstraintName("payment_transactions_payment_id_fkey");
-        });
-
-        modelBuilder.Entity<PricingCombo>(entity =>
-        {
-            entity.HasKey(e => e.ComboId).HasName("pricing_combos_pkey");
-
-            entity.ToTable("pricing_combos", "core");
-
-            entity.Property(e => e.ComboId)
-                .ValueGeneratedNever()
-                .HasColumnName("combo_id");
-            entity.Property(e => e.ComboFactor)
-                .HasPrecision(3, 2)
-                .HasColumnName("combo_factor");
-            entity.Property(e => e.Hours).HasColumnName("hours");
-            entity.Property(e => e.IsActive).HasColumnName("is_active");
-        });
-
-        modelBuilder.Entity<PricingFactor>(entity =>
-        {
-            entity.HasKey(e => e.FactorId).HasName("pricing_factors_pkey");
-
-            entity.ToTable("pricing_factors", "core");
-
-            entity.Property(e => e.FactorId)
-                .ValueGeneratedNever()
-                .HasColumnName("factor_id");
-            entity.Property(e => e.EndTime).HasColumnName("end_time");
-            entity.Property(e => e.FactorType)
-                .HasColumnType("character varying")
-                .HasColumnName("factor_type");
-            entity.Property(e => e.IsActive).HasColumnName("is_active");
-            entity.Property(e => e.MaxFactor)
-                .HasPrecision(3, 2)
-                .HasColumnName("max_factor");
-            entity.Property(e => e.MinFactor)
-                .HasPrecision(3, 2)
-                .HasColumnName("min_factor");
-            entity.Property(e => e.Priority)
-                .HasDefaultValue(0)
-                .HasColumnName("priority");
-            entity.Property(e => e.RefCode)
-                .HasColumnType("character varying")
-                .HasColumnName("ref_code");
-            entity.Property(e => e.StartTime).HasColumnName("start_time");
-        });
-
-        modelBuilder.Entity<Review>(entity =>
-        {
-            entity.HasKey(e => e.ReviewId).HasName("reviews_pkey");
-
-            entity.ToTable("reviews", "core");
-
-            entity.HasIndex(e => e.BookingId, "reviews_booking_id_key").IsUnique();
-
-            entity.Property(e => e.ReviewId)
-                .ValueGeneratedNever()
-                .HasColumnName("review_id");
-            entity.Property(e => e.BookingId).HasColumnName("booking_id");
-            entity.Property(e => e.BoxId).HasColumnName("box_id");
-            entity.Property(e => e.Comment).HasColumnName("comment");
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.GuestId).HasColumnName("guest_id");
-            entity.Property(e => e.RatingScore).HasColumnName("rating_score");
-            entity.Property(e => e.ReviewStatus)
-                .HasColumnType("character varying")
-                .HasColumnName("review_status");
-
-            entity.HasOne(d => d.Booking).WithOne(p => p.Review)
-                .HasForeignKey<Review>(d => d.BookingId)
-                .HasConstraintName("reviews_booking_id_fkey");
-
-            entity.HasOne(d => d.Box).WithMany(p => p.Reviews)
-                .HasForeignKey(d => d.BoxId)
-                .HasConstraintName("reviews_box_id_fkey");
-
-            entity.HasOne(d => d.Guest).WithMany(p => p.Reviews)
-                .HasForeignKey(d => d.GuestId)
-                .HasConstraintName("reviews_guest_id_fkey");
-        });
-
-        modelBuilder.Entity<Sleepbox>(entity =>
-        {
-            entity.HasKey(e => e.BoxId).HasName("sleepbox_pkey");
-
-            entity.ToTable("sleepbox", "core");
-
-            entity.Property(e => e.BoxId)
-                .ValueGeneratedNever()
-                .HasColumnName("box_id");
-            entity.Property(e => e.BoxLevel)
-                .HasColumnType("character varying")
-                .HasColumnName("box_level");
-            entity.Property(e => e.BoxName)
-                .HasColumnType("character varying")
-                .HasColumnName("box_name");
-            entity.Property(e => e.BoxRow)
-                .HasColumnType("character varying")
-                .HasColumnName("box_row");
-            entity.Property(e => e.BoxStatus)
-                .HasColumnType("character varying")
-                .HasColumnName("box_status");
-            entity.Property(e => e.BoxType)
-                .HasColumnType("character varying")
-                .HasColumnName("box_type");
-            entity.Property(e => e.CleaningBufferMinutes).HasColumnName("cleaning_buffer_minutes");
-            entity.Property(e => e.FloorId).HasColumnName("floor_id");
-            entity.Property(e => e.SizeHeight).HasColumnName("size_height");
-            entity.Property(e => e.SizeLength).HasColumnName("size_length");
-            entity.Property(e => e.SizeWidth).HasColumnName("size_width");
-
-            entity.HasOne(d => d.Floor).WithMany(p => p.Sleepboxes)
-                .HasForeignKey(d => d.FloorId)
-                .HasConstraintName("sleepbox_floor_id_fkey");
-
-            entity.HasMany(d => d.Amenities).WithMany(p => p.Boxes)
+            entity.HasMany(d => d.amenities).WithMany(p => p.facilities)
                 .UsingEntity<Dictionary<string, object>>(
-                    "SleepboxAmenity",
-                    r => r.HasOne<Amenity>().WithMany()
-                        .HasForeignKey("AmenityId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("sleepbox_amenities_amenity_id_fkey"),
-                    l => l.HasOne<Sleepbox>().WithMany()
-                        .HasForeignKey("BoxId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("sleepbox_amenities_box_id_fkey"),
+                    "facility_amenity",
+                    r => r.HasOne<amenity>().WithMany()
+                        .HasForeignKey("amenity_id")
+                        .HasConstraintName("facility_amenities_amenity_id_fkey"),
+                    l => l.HasOne<facility>().WithMany()
+                        .HasForeignKey("facility_id")
+                        .HasConstraintName("facility_amenities_facility_id_fkey"),
                     j =>
                     {
-                        j.HasKey("BoxId", "AmenityId").HasName("sleepbox_amenities_pkey");
-                        j.ToTable("sleepbox_amenities", "core");
-                        j.IndexerProperty<Guid>("BoxId").HasColumnName("box_id");
-                        j.IndexerProperty<int>("AmenityId").HasColumnName("amenity_id");
+                        j.HasKey("facility_id", "amenity_id").HasName("facility_amenities_pkey");
+                        j.ToTable("facility_amenities");
                     });
         });
 
-        modelBuilder.Entity<StaffProfile>(entity =>
+        modelBuilder.Entity<facility_area>(entity =>
         {
-            entity.HasKey(e => e.StaffId).HasName("staff_profiles_pkey");
+            entity.HasKey(e => e.area_id).HasName("facility_area_pkey");
 
-            entity.ToTable("staff_profiles", "core");
+            entity.ToTable("facility_area");
 
-            entity.Property(e => e.StaffId)
-                .ValueGeneratedNever()
-                .HasColumnName("staff_id");
-            entity.Property(e => e.FacilityId).HasColumnName("facility_id");
-            entity.Property(e => e.IsActive)
-                .HasDefaultValue(true)
-                .HasColumnName("is_active");
-            entity.Property(e => e.JobDescription).HasColumnName("job_description");
-            entity.Property(e => e.Position)
-                .HasColumnType("character varying")
-                .HasColumnName("position");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
-            entity.Property(e => e.WorkplaceNote)
-                .HasColumnType("character varying")
-                .HasColumnName("workplace_note");
+            entity.HasIndex(e => e.facility_id, "idx_facility_area_facility");
 
-            entity.HasOne(d => d.Facility).WithMany(p => p.StaffProfiles)
-                .HasForeignKey(d => d.FacilityId)
-                .HasConstraintName("staff_profiles_facility_id_fkey");
+            entity.HasIndex(e => new { e.facility_id, e.area_name }, "ux_facility_area_name").IsUnique();
 
-            entity.HasOne(d => d.User).WithMany(p => p.StaffProfiles)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("staff_profiles_user_id_fkey");
+            entity.Property(e => e.area_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.area_name).HasColumnType("character varying");
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+
+            entity.HasOne(d => d.facility).WithMany(p => p.facility_areas)
+                .HasForeignKey(d => d.facility_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("facility_area_facility_id_fkey");
         });
 
-        modelBuilder.Entity<SystemFee>(entity =>
+        modelBuilder.Entity<host_addon_price>(entity =>
         {
-            entity.HasKey(e => e.SystemFeeId).HasName("system_fees_pkey");
+            entity.HasKey(e => e.host_service_id).HasName("host_addon_prices_pkey");
 
-            entity.ToTable("system_fees", "core");
+            entity.HasIndex(e => e.facility_id, "idx_host_addon_prices_facility");
 
-            entity.Property(e => e.SystemFeeId)
-                .ValueGeneratedNever()
-                .HasColumnName("system_fee_id");
-            entity.Property(e => e.EffectiveFrom)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("effective_from");
-            entity.Property(e => e.EffectiveTo)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("effective_to");
-            entity.Property(e => e.FeeCode)
-                .HasColumnType("character varying")
-                .HasColumnName("fee_code");
-            entity.Property(e => e.FeeType)
-                .HasColumnType("character varying")
-                .HasColumnName("fee_type");
-            entity.Property(e => e.FeeValue).HasColumnName("fee_value");
-            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.HasIndex(e => new { e.facility_id, e.service_id }, "ux_host_addon_service").IsUnique();
+
+            entity.Property(e => e.host_service_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+            entity.Property(e => e.price).HasPrecision(12, 2);
+
+            entity.HasOne(d => d.facility).WithMany(p => p.host_addon_prices)
+                .HasForeignKey(d => d.facility_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("host_addon_prices_facility_id_fkey");
+
+            entity.HasOne(d => d.service).WithMany(p => p.host_addon_prices)
+                .HasForeignKey(d => d.service_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("host_addon_prices_service_id_fkey");
         });
 
-        modelBuilder.Entity<SystemPriceRule>(entity =>
+        modelBuilder.Entity<host_base_price>(entity =>
         {
-            entity.HasKey(e => e.RuleId).HasName("system_price_rules_pkey");
+            entity.HasKey(e => e.host_price_id).HasName("host_base_prices_pkey");
 
-            entity.ToTable("system_price_rules", "core");
+            entity.HasIndex(e => e.facility_id, "idx_host_base_prices_facility");
 
-            entity.Property(e => e.RuleId)
-                .ValueGeneratedNever()
-                .HasColumnName("rule_id");
-            entity.Property(e => e.BoxType)
-                .HasColumnType("character varying")
-                .HasColumnName("box_type");
-            entity.Property(e => e.FixedEndTime).HasColumnName("fixed_end_time");
-            entity.Property(e => e.FixedStartTime).HasColumnName("fixed_start_time");
-            entity.Property(e => e.IsActive).HasColumnName("is_active");
-            entity.Property(e => e.MaxHours).HasColumnName("max_hours");
-            entity.Property(e => e.MaxPrice).HasColumnName("max_price");
-            entity.Property(e => e.MinHours).HasColumnName("min_hours");
-            entity.Property(e => e.MinPrice).HasColumnName("min_price");
-            entity.Property(e => e.PricingMode)
-                .HasColumnType("character varying")
-                .HasColumnName("pricing_mode");
+            entity.HasIndex(e => new { e.facility_id, e.rule_id, e.box_type }, "ux_host_base_price").IsUnique();
+
+            entity.Property(e => e.host_price_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.base_hour_price).HasPrecision(12, 2);
+            entity.Property(e => e.base_overnight_price).HasPrecision(12, 2);
+            entity.Property(e => e.box_type).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+
+            entity.HasOne(d => d.facility).WithMany(p => p.host_base_prices)
+                .HasForeignKey(d => d.facility_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("host_base_prices_facility_id_fkey");
+
+            entity.HasOne(d => d.rule).WithMany(p => p.host_base_prices)
+                .HasForeignKey(d => d.rule_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("host_base_prices_rule_id_fkey");
         });
 
-        modelBuilder.HasPostgresEnum<UserRole>("core", "user_role");
-
-        base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<User>(entity =>
+        modelBuilder.Entity<host_document>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("users_pkey");
+            entity.HasKey(e => e.document_id).HasName("host_documents_pkey");
 
-            entity.ToTable("users", "core");
+            entity.HasIndex(e => new { e.host_id, e.document_type, e.version }, "ux_host_documents_version").IsUnique();
 
-            entity.HasIndex(e => e.Email, "idx_users_email");
+            entity.Property(e => e.document_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.attachments).HasColumnType("jsonb");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.document_status)
+                .HasDefaultValueSql("'PENDING'::character varying")
+                .HasColumnType("character varying");
+            entity.Property(e => e.document_type).HasColumnType("character varying");
 
-            entity.HasIndex(e => e.Username, "idx_users_username");
+            entity.HasOne(d => d.host).WithMany(p => p.host_documents)
+                .HasForeignKey(d => d.host_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_host_documents_host");
 
-            entity.HasIndex(e => e.Email, "users_email_key").IsUnique();
+            entity.HasOne(d => d.reviewed_byNavigation).WithMany(p => p.host_documents)
+                .HasForeignKey(d => d.reviewed_by)
+                .HasConstraintName("fk_host_documents_reviewer");
+        });
 
-            entity.HasIndex(e => e.Username, "users_username_key").IsUnique();
+        modelBuilder.Entity<host_payout_account>(entity =>
+        {
+            entity.HasKey(e => e.account_id).HasName("host_payout_accounts_pkey");
 
-            entity.Property(e => e.UserId)
-                .ValueGeneratedNever()
-                .HasColumnName("user_id");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("now()")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_at");
-            entity.Property(e => e.Email)
-                .HasColumnType("character varying")
-                .HasColumnName("email");
-            entity.Property(e => e.EmailVerifiedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("email_verified_at");
-            entity.Property(e => e.IsEmailVerified)
-                .HasDefaultValue(false)
-                .HasColumnName("is_email_verified");
-            entity.Property(e => e.LastLoginAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("last_login_at");
-            entity.Property(e => e.PasswordHash)
-                .HasColumnType("character varying")
-                .HasColumnName("password_hash");
-            entity.Property(e => e.Phone)
-                .HasColumnType("character varying")
-                .HasColumnName("phone");
-            entity.Property(e => e.Role)
-                .HasColumnName("role")
-                .HasColumnType("core.user_role")
-                .HasConversion<UserRole>();
-            entity.Property(e => e.UserStatus)
+            entity.HasIndex(e => e.host_id, "ux_host_primary_payout")
+                .IsUnique()
+                .HasFilter("(is_primary = true)");
+
+            entity.Property(e => e.account_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.account_name).HasColumnType("character varying");
+            entity.Property(e => e.account_number).HasColumnType("character varying");
+            entity.Property(e => e.bank_name).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.is_primary).HasDefaultValue(false);
+            entity.Property(e => e.payment_method).HasColumnType("character varying");
+
+            entity.HasOne(d => d.host).WithOne(p => p.host_payout_account)
+                .HasForeignKey<host_payout_account>(d => d.host_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("host_payout_accounts_host_id_fkey");
+        });
+
+        modelBuilder.Entity<host_profile>(entity =>
+        {
+            entity.HasKey(e => e.host_id).HasName("host_profiles_pkey");
+
+            entity.HasIndex(e => e.user_id, "host_profiles_user_id_key").IsUnique();
+
+            entity.Property(e => e.host_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.business_address).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.representative_id_number).HasColumnType("character varying");
+            entity.Property(e => e.representative_name).HasColumnType("character varying");
+            entity.Property(e => e.tax_code).HasColumnType("character varying");
+            entity.Property(e => e.verified_status)
+                .HasDefaultValueSql("'PENDING'::character varying")
+                .HasColumnType("character varying");
+
+            entity.HasOne(d => d.user).WithOne(p => p.host_profileuser)
+                .HasForeignKey<host_profile>(d => d.user_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_host_profiles_user");
+
+            entity.HasOne(d => d.verified_byNavigation).WithMany(p => p.host_profileverified_byNavigations)
+                .HasForeignKey(d => d.verified_by)
+                .HasConstraintName("fk_host_profiles_verified_by");
+        });
+
+        modelBuilder.Entity<media_asset>(entity =>
+        {
+            entity.HasKey(e => e.media_id).HasName("media_assets_pkey");
+
+            entity.HasIndex(e => new { e.target_type, e.target_id }, "idx_media_assets_target");
+
+            entity.HasIndex(e => new { e.target_type, e.target_id }, "ux_media_cover")
+                .IsUnique()
+                .HasFilter("(is_cover = true)");
+
+            entity.Property(e => e.media_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.display_order).HasDefaultValue(0);
+            entity.Property(e => e.is_cover).HasDefaultValue(false);
+            entity.Property(e => e.media_type).HasColumnType("character varying");
+            entity.Property(e => e.media_url).HasColumnType("character varying");
+            entity.Property(e => e.target_type).HasColumnType("character varying");
+            entity.Property(e => e.thumbnail_url).HasColumnType("character varying");
+
+            entity.HasOne(d => d.uploaded_byNavigation).WithMany(p => p.media_assets)
+                .HasForeignKey(d => d.uploaded_by)
+                .HasConstraintName("media_assets_uploaded_by_fkey");
+        });
+
+        modelBuilder.Entity<message>(entity =>
+        {
+            entity.HasKey(e => e.message_id).HasName("messages_pkey");
+
+            entity.HasIndex(e => new { e.conversation_id, e.sent_at }, "idx_messages_conversation_time");
+
+            entity.HasIndex(e => e.sender_id, "idx_messages_sender");
+
+            entity.Property(e => e.message_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.is_read).HasDefaultValue(false);
+            entity.Property(e => e.message_type).HasColumnType("character varying");
+            entity.Property(e => e.sent_at).HasDefaultValueSql("now()");
+
+            entity.HasOne(d => d.conversation).WithMany(p => p.messages)
+                .HasForeignKey(d => d.conversation_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("messages_conversation_id_fkey");
+
+            entity.HasOne(d => d.sender).WithMany(p => p.messages)
+                .HasForeignKey(d => d.sender_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("messages_sender_id_fkey");
+        });
+
+        modelBuilder.Entity<notification>(entity =>
+        {
+            entity.HasKey(e => e.notification_id).HasName("notifications_pkey");
+
+            entity.HasIndex(e => new { e.user_id, e.created_at }, "idx_notifications_user_time").IsDescending(false, true);
+
+            entity.Property(e => e.notification_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.notification_type).HasColumnType("character varying");
+            entity.Property(e => e.target_type).HasColumnType("character varying");
+            entity.Property(e => e.title).HasColumnType("character varying");
+
+            entity.HasOne(d => d.user).WithMany(p => p.notifications)
+                .HasForeignKey(d => d.user_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("notifications_user_id_fkey");
+        });
+
+        modelBuilder.Entity<payment>(entity =>
+        {
+            entity.HasKey(e => e.payment_id).HasName("payments_pkey");
+
+            entity.HasIndex(e => e.booking_id, "idx_payments_booking");
+
+            entity.HasIndex(e => e.payment_status, "idx_payments_status");
+
+            entity.HasIndex(e => e.client_request_id, "payments_client_request_id_key").IsUnique();
+
+            entity.Property(e => e.payment_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.amount).HasPrecision(12, 2);
+            entity.Property(e => e.client_request_id).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.currency)
+                .HasDefaultValueSql("'VND'::character varying")
+                .HasColumnType("character varying");
+            entity.Property(e => e.payment_status).HasColumnType("character varying");
+            entity.Property(e => e.payment_type).HasColumnType("character varying");
+            entity.Property(e => e.reference_note).HasColumnType("character varying");
+
+            entity.HasOne(d => d.booking).WithMany(p => p.payments)
+                .HasForeignKey(d => d.booking_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("payments_booking_id_fkey");
+        });
+
+        modelBuilder.Entity<payment_transaction>(entity =>
+        {
+            entity.HasKey(e => e.transaction_id).HasName("payment_transactions_pkey");
+
+            entity.HasIndex(e => e.gateway_transaction_id, "idx_payment_transactions_gateway");
+
+            entity.HasIndex(e => e.payment_id, "idx_payment_transactions_payment");
+
+            entity.Property(e => e.transaction_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.environment).HasColumnType("character varying");
+            entity.Property(e => e.gateway_transaction_id).HasColumnType("character varying");
+            entity.Property(e => e.provider).HasColumnType("character varying");
+            entity.Property(e => e.provider_response_code).HasColumnType("character varying");
+            entity.Property(e => e.request_type).HasColumnType("character varying");
+            entity.Property(e => e.transaction_status).HasColumnType("character varying");
+
+            entity.HasOne(d => d.payment).WithMany(p => p.payment_transactions)
+                .HasForeignKey(d => d.payment_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("payment_transactions_payment_id_fkey");
+        });
+
+        modelBuilder.Entity<platform_fee_config>(entity =>
+        {
+            entity.HasKey(e => e.config_id).HasName("platform_fee_configs_pkey");
+
+            entity.HasIndex(e => new { e.fee_code, e.effective_from }, "idx_platform_fee_code_effective");
+
+            entity.HasIndex(e => e.target_host_id, "idx_platform_fee_target_host");
+
+            entity.HasIndex(e => new { e.fee_code, e.effective_from }, "ux_platform_fee_code_time").IsUnique();
+
+            entity.Property(e => e.config_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.applied_base_on).HasColumnType("character varying");
+            entity.Property(e => e.calculation_method).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.fee_code).HasColumnType("character varying");
+            entity.Property(e => e.fee_name).HasColumnType("character varying");
+            entity.Property(e => e.fee_type).HasColumnType("character varying");
+            entity.Property(e => e.fixed_amount).HasPrecision(12, 2);
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+            entity.Property(e => e.percentage_value).HasPrecision(5, 2);
+            entity.Property(e => e.priority).HasDefaultValue(0);
+
+            entity.HasOne(d => d.target_host).WithMany(p => p.platform_fee_configs)
+                .HasForeignKey(d => d.target_host_id)
+                .HasConstraintName("platform_fee_configs_target_host_id_fkey");
+        });
+
+        modelBuilder.Entity<pricing_combo>(entity =>
+        {
+            entity.HasKey(e => e.combo_id).HasName("pricing_combos_pkey");
+
+            entity.HasIndex(e => new { e.rule_id, e.hours }, "ux_pricing_combo_rule_hours").IsUnique();
+
+            entity.Property(e => e.combo_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.combo_factor).HasPrecision(3, 2);
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+
+            entity.HasOne(d => d.rule).WithMany(p => p.pricing_combos)
+                .HasForeignKey(d => d.rule_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("pricing_combos_rule_id_fkey");
+        });
+
+        modelBuilder.Entity<pricing_factor>(entity =>
+        {
+            entity.HasKey(e => e.factor_id).HasName("pricing_factors_pkey");
+
+            entity.HasIndex(e => e.rule_id, "idx_pricing_factors_rule");
+
+            entity.Property(e => e.factor_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.factor_type).HasColumnType("character varying");
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+            entity.Property(e => e.max_factor).HasPrecision(3, 2);
+            entity.Property(e => e.min_factor).HasPrecision(3, 2);
+            entity.Property(e => e.priority).HasDefaultValue(0);
+            entity.Property(e => e.ref_code).HasColumnType("character varying");
+
+            entity.HasOne(d => d.rule).WithMany(p => p.pricing_factors)
+                .HasForeignKey(d => d.rule_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("pricing_factors_rule_id_fkey");
+        });
+
+        modelBuilder.Entity<review>(entity =>
+        {
+            entity.HasKey(e => e.review_id).HasName("reviews_pkey");
+
+            entity.HasIndex(e => e.facility_id, "idx_reviews_facility");
+
+            entity.HasIndex(e => e.guest_id, "idx_reviews_guest");
+
+            entity.HasIndex(e => e.booking_id, "reviews_booking_id_key").IsUnique();
+
+            entity.Property(e => e.review_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+
+            entity.HasOne(d => d.booking).WithOne(p => p.review)
+                .HasForeignKey<review>(d => d.booking_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("reviews_booking_id_fkey");
+
+            entity.HasOne(d => d.facility).WithMany(p => p.reviews)
+                .HasForeignKey(d => d.facility_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("reviews_facility_id_fkey");
+
+            entity.HasOne(d => d.guest).WithMany(p => p.reviews)
+                .HasForeignKey(d => d.guest_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("reviews_guest_id_fkey");
+        });
+
+        modelBuilder.Entity<sleepbox>(entity =>
+        {
+            entity.HasKey(e => e.box_id).HasName("sleepbox_pkey");
+
+            entity.ToTable("sleepbox");
+
+            entity.HasIndex(e => new { e.area_id, e.row_number, e.level_number }, "ux_sleepbox_position").IsUnique();
+
+            entity.Property(e => e.box_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.box_class).HasColumnType("character varying");
+            entity.Property(e => e.box_name).HasColumnType("character varying");
+            entity.Property(e => e.box_status).HasColumnType("character varying");
+            entity.Property(e => e.box_type).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+
+            entity.HasOne(d => d.area).WithMany(p => p.sleepboxes)
+                .HasForeignKey(d => d.area_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("sleepbox_area_id_fkey");
+
+            entity.HasMany(d => d.amenities).WithMany(p => p.boxes)
+                .UsingEntity<Dictionary<string, object>>(
+                    "sleepbox_amenity",
+                    r => r.HasOne<amenity>().WithMany()
+                        .HasForeignKey("amenity_id")
+                        .HasConstraintName("sleepbox_amenities_amenity_id_fkey"),
+                    l => l.HasOne<sleepbox>().WithMany()
+                        .HasForeignKey("box_id")
+                        .HasConstraintName("sleepbox_amenities_box_id_fkey"),
+                    j =>
+                    {
+                        j.HasKey("box_id", "amenity_id").HasName("sleepbox_amenities_pkey");
+                        j.ToTable("sleepbox_amenities");
+                    });
+        });
+
+        modelBuilder.Entity<staff_profile>(entity =>
+        {
+            entity.HasKey(e => e.staff_id).HasName("staff_profiles_pkey");
+
+            entity.HasIndex(e => e.facility_id, "idx_staff_profiles_facility");
+
+            entity.HasIndex(e => e.user_id, "idx_staff_profiles_user");
+
+            entity.Property(e => e.staff_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+            entity.Property(e => e.position).HasColumnType("character varying");
+
+            entity.HasOne(d => d.facility).WithMany(p => p.staff_profiles)
+                .HasForeignKey(d => d.facility_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_staff_profiles_facility");
+
+            entity.HasOne(d => d.user).WithMany(p => p.staff_profiles)
+                .HasForeignKey(d => d.user_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_staff_profiles_user");
+        });
+
+        modelBuilder.Entity<system_policy>(entity =>
+        {
+            entity.HasKey(e => e.policy_id).HasName("system_policies_pkey");
+
+            entity.HasIndex(e => e.policy_type, "idx_system_policies_type");
+
+            entity.Property(e => e.policy_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+            entity.Property(e => e.policy_type).HasColumnType("character varying");
+            entity.Property(e => e.title).HasColumnType("character varying");
+            entity.Property(e => e.version).HasColumnType("character varying");
+        });
+
+        modelBuilder.Entity<system_price_rule>(entity =>
+        {
+            entity.HasKey(e => e.rule_id).HasName("system_price_rules_pkey");
+
+            entity.HasIndex(e => new { e.pricing_mode, e.is_active }, "idx_price_rules_mode_active");
+
+            entity.Property(e => e.rule_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+            entity.Property(e => e.max_price).HasPrecision(12, 2);
+            entity.Property(e => e.min_price).HasPrecision(12, 2);
+            entity.Property(e => e.pricing_mode).HasColumnType("character varying");
+            entity.Property(e => e.priority).HasDefaultValue(0);
+        });
+
+        modelBuilder.Entity<user>(entity =>
+        {
+            entity.HasKey(e => e.user_id).HasName("users_pkey");
+
+            entity.HasIndex(e => e.email, "users_email_key").IsUnique();
+
+            entity.HasIndex(e => e.username, "users_username_key").IsUnique();
+
+            entity.Property(e => e.user_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.email).HasColumnType("character varying");
+            entity.Property(e => e.is_email_verified).HasDefaultValue(false);
+            entity.Property(e => e.password_hash).HasColumnType("character varying");
+            entity.Property(e => e.phone).HasColumnType("character varying");
+            entity.Property(e => e.role).HasColumnType("character varying");
+            entity.Property(e => e.user_status)
                 .HasDefaultValueSql("'ACTIVE'::character varying")
-                .HasColumnType("character varying")
-                .HasColumnName("user_status");
-            entity.Property(e => e.Username)
-                .HasColumnType("character varying")
-                .HasColumnName("username");
+                .HasColumnType("character varying");
+            entity.Property(e => e.username).HasColumnType("character varying");
         });
 
-        modelBuilder.Entity<UserProfile>(entity =>
+        modelBuilder.Entity<user_favorite>(entity =>
         {
-            entity.HasKey(e => e.ProfileId).HasName("user_profiles_pkey");
+            entity.HasKey(e => e.favorite_id).HasName("user_favorites_pkey");
 
-            entity.ToTable("user_profiles", "core");
+            entity.HasIndex(e => new { e.user_id, e.facility_id }, "ux_user_favorites").IsUnique();
 
-            entity.HasIndex(e => e.UserId, "user_profiles_user_id_key").IsUnique();
+            entity.Property(e => e.favorite_id).HasDefaultValueSql("gen_random_uuid()");
 
-            entity.Property(e => e.ProfileId)
-                .ValueGeneratedNever()
-                .HasColumnName("profile_id");
-            entity.Property(e => e.AvatarUrl)
-                .HasColumnType("character varying")
-                .HasColumnName("avatar_url");
-            entity.Property(e => e.DateOfBirth).HasColumnName("date_of_birth");
-            entity.Property(e => e.FirstName)
-                .HasColumnType("character varying")
-                .HasColumnName("first_name");
-            entity.Property(e => e.Gender)
-                .HasColumnType("character varying")
-                .HasColumnName("gender");
-            entity.Property(e => e.LastName)
-                .HasColumnType("character varying")
-                .HasColumnName("last_name");
-            entity.Property(e => e.UpdatedAt)
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("updated_at");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.HasOne(d => d.facility).WithMany(p => p.user_favorites)
+                .HasForeignKey(d => d.facility_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("user_favorites_facility_id_fkey");
 
-            entity.HasOne(d => d.User).WithOne(p => p.UserProfile)
-                .HasForeignKey<UserProfile>(d => d.UserId)
-                .HasConstraintName("user_profiles_user_id_fkey");
+            entity.HasOne(d => d.user).WithMany(p => p.user_favorites)
+                .HasForeignKey(d => d.user_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("user_favorites_user_id_fkey");
+        });
+
+        modelBuilder.Entity<user_profile>(entity =>
+        {
+            entity.HasKey(e => e.profile_id).HasName("user_profiles_pkey");
+
+            entity.HasIndex(e => e.user_id, "user_profiles_user_id_key").IsUnique();
+
+            entity.Property(e => e.profile_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.avatar_url).HasColumnType("character varying");
+            entity.Property(e => e.first_name).HasColumnType("character varying");
+            entity.Property(e => e.gender).HasColumnType("character varying");
+            entity.Property(e => e.last_name).HasColumnType("character varying");
+            entity.Property(e => e.updated_at).HasDefaultValueSql("now()");
+
+            entity.HasOne(d => d.user).WithOne(p => p.user_profile)
+                .HasForeignKey<user_profile>(d => d.user_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_user_profiles_user");
+        });
+
+        modelBuilder.Entity<wallet>(entity =>
+        {
+            entity.HasKey(e => e.wallet_id).HasName("wallets_pkey");
+
+            entity.HasIndex(e => e.host_id, "idx_wallets_host");
+
+            entity.HasIndex(e => e.wallet_type, "idx_wallets_type");
+
+            entity.Property(e => e.wallet_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.available_balance)
+                .HasPrecision(12, 2)
+                .HasDefaultValueSql("0");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.currency)
+                .HasDefaultValueSql("'VND'::character varying")
+                .HasColumnType("character varying");
+            entity.Property(e => e.pending_balance)
+                .HasPrecision(12, 2)
+                .HasDefaultValueSql("0");
+            entity.Property(e => e.wallet_type).HasColumnType("character varying");
+
+            entity.HasOne(d => d.host).WithMany(p => p.wallets)
+                .HasForeignKey(d => d.host_id)
+                .HasConstraintName("wallets_host_id_fkey");
+        });
+
+        modelBuilder.Entity<wallet_transaction>(entity =>
+        {
+            entity.HasKey(e => e.transaction_id).HasName("wallet_transactions_pkey");
+
+            entity.HasIndex(e => new { e.reference_type, e.reference_id }, "idx_wallet_transactions_reference");
+
+            entity.HasIndex(e => e.transaction_type, "idx_wallet_transactions_type");
+
+            entity.HasIndex(e => new { e.wallet_id, e.created_at }, "idx_wallet_transactions_wallet_time").IsDescending(false, true);
+
+            entity.Property(e => e.transaction_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.amount).HasPrecision(12, 2);
+            entity.Property(e => e.available_balance_after).HasPrecision(12, 2);
+            entity.Property(e => e.balance_type).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.direction).HasColumnType("character varying");
+            entity.Property(e => e.pending_balance_after).HasPrecision(12, 2);
+            entity.Property(e => e.reference_type).HasColumnType("character varying");
+            entity.Property(e => e.transaction_status)
+                .HasDefaultValueSql("'SUCCESS'::character varying")
+                .HasColumnType("character varying");
+            entity.Property(e => e.transaction_type).HasColumnType("character varying");
+
+            entity.HasOne(d => d.wallet).WithMany(p => p.wallet_transactions)
+                .HasForeignKey(d => d.wallet_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("wallet_transactions_wallet_id_fkey");
+        });
+
+        modelBuilder.Entity<withdrawal_request>(entity =>
+        {
+            entity.HasKey(e => e.request_id).HasName("withdrawal_requests_pkey");
+
+            entity.HasIndex(e => e.host_id, "idx_withdrawal_requests_host");
+
+            entity.HasIndex(e => e.status, "idx_withdrawal_requests_status");
+
+            entity.HasIndex(e => e.wallet_id, "idx_withdrawal_requests_wallet");
+
+            entity.HasIndex(e => e.request_code, "withdrawal_requests_request_code_key").IsUnique();
+
+            entity.Property(e => e.request_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.amount).HasPrecision(12, 2);
+            entity.Property(e => e.bank_transaction_code).HasColumnType("character varying");
+            entity.Property(e => e.request_code).HasColumnType("character varying");
+            entity.Property(e => e.requested_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.status).HasColumnType("character varying");
+
+            entity.HasOne(d => d.account).WithMany(p => p.withdrawal_requests)
+                .HasForeignKey(d => d.account_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("withdrawal_requests_account_id_fkey");
+
+            entity.HasOne(d => d.host).WithMany(p => p.withdrawal_requests)
+                .HasForeignKey(d => d.host_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("withdrawal_requests_host_id_fkey");
+
+            entity.HasOne(d => d.wallet).WithMany(p => p.withdrawal_requests)
+                .HasForeignKey(d => d.wallet_id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("withdrawal_requests_wallet_id_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

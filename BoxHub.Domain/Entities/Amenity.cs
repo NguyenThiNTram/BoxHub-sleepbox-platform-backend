@@ -3,19 +3,17 @@ using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
 
-public partial class Amenity
+public partial class amenity
 {
-    public int AmenityId { get; set; }
+    public int amenity_id { get; set; }
 
-    public string? AmenityName { get; set; }
+    public string amenity_name { get; set; } = null!;
 
-    public string? AmenityType { get; set; }
+    public string? amenity_type { get; set; }
 
-    public string? IconUrl { get; set; }
+    public string? description { get; set; }
 
-    public string? AmenityScope { get; set; }
+    public virtual ICollection<sleepbox> boxes { get; set; } = new List<sleepbox>();
 
-    public string? AmenityCategory { get; set; }
-
-    public virtual ICollection<Sleepbox> Boxes { get; set; } = new List<Sleepbox>();
+    public virtual ICollection<facility> facilities { get; set; } = new List<facility>();
 }

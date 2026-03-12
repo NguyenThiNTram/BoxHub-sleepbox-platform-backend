@@ -3,21 +3,23 @@ using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
 
-public partial class Message
+public partial class message
 {
-    public Guid MessageId { get; set; }
+    public Guid message_id { get; set; }
 
-    public Guid? ConversationId { get; set; }
+    public Guid conversation_id { get; set; }
 
-    public Guid? SenderId { get; set; }
+    public Guid sender_id { get; set; }
 
-    public string? Content { get; set; }
+    public string? message_type { get; set; }
 
-    public DateTime? SentAt { get; set; }
+    public string? content { get; set; }
 
-    public bool? IsRead { get; set; }
+    public DateTime sent_at { get; set; }
 
-    public virtual Conversation? Conversation { get; set; }
+    public bool? is_read { get; set; }
 
-    public virtual User? Sender { get; set; }
+    public virtual conversation conversation { get; set; } = null!;
+
+    public virtual user sender { get; set; } = null!;
 }

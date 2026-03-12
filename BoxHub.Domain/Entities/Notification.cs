@@ -3,21 +3,23 @@ using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
 
-public partial class Notification
+public partial class notification
 {
-    public Guid NotificationId { get; set; }
+    public Guid notification_id { get; set; }
 
-    public Guid? UserId { get; set; }
+    public Guid user_id { get; set; }
 
-    public string? Title { get; set; }
+    public string notification_type { get; set; } = null!;
 
-    public string? Content { get; set; }
+    public string? target_type { get; set; }
 
-    public string? NotificationType { get; set; }
+    public Guid? target_id { get; set; }
 
-    public bool? IsRead { get; set; }
+    public string? title { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
+    public string? content { get; set; }
 
-    public virtual User? User { get; set; }
+    public DateTime created_at { get; set; }
+
+    public virtual user user { get; set; } = null!;
 }

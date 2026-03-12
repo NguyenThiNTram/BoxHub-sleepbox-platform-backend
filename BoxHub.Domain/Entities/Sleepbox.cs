@@ -3,37 +3,39 @@ using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
 
-public partial class Sleepbox
+public partial class sleepbox
 {
-    public Guid BoxId { get; set; }
+    public Guid box_id { get; set; }
 
-    public Guid? FloorId { get; set; }
+    public Guid area_id { get; set; }
 
-    public string? BoxName { get; set; }
+    public string box_name { get; set; } = null!;
 
-    public string? BoxType { get; set; }
+    public string? box_type { get; set; }
 
-    public string? BoxRow { get; set; }
+    public string? box_class { get; set; }
 
-    public string? BoxLevel { get; set; }
+    public int? row_number { get; set; }
 
-    public decimal? SizeWidth { get; set; }
+    public int? level_number { get; set; }
 
-    public decimal? SizeLength { get; set; }
+    public decimal? size_width { get; set; }
 
-    public decimal? SizeHeight { get; set; }
+    public decimal? size_length { get; set; }
 
-    public int? CleaningBufferMinutes { get; set; }
+    public decimal? size_height { get; set; }
 
-    public string? BoxStatus { get; set; }
+    public string? box_status { get; set; }
 
-    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public DateTime created_at { get; set; }
 
-    public virtual ICollection<BoxAvailability> BoxAvailabilities { get; set; } = new List<BoxAvailability>();
+    public DateTime? updated_at { get; set; }
 
-    public virtual FacilityFloor? Floor { get; set; }
+    public virtual facility_area area { get; set; } = null!;
 
-    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual ICollection<booking_box> booking_boxes { get; set; } = new List<booking_box>();
 
-    public virtual ICollection<Amenity> Amenities { get; set; } = new List<Amenity>();
+    public virtual ICollection<box_availability> box_availabilities { get; set; } = new List<box_availability>();
+
+    public virtual ICollection<amenity> amenities { get; set; } = new List<amenity>();
 }

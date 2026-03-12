@@ -1,65 +1,56 @@
+using BoxHub.Application.Auth;
+using BoxHub.Application.DTOs.Responses;
+using BoxHub.Domain.Entities;
+using BoxHub.Infrastructure.Data;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BoxHub.Application.Auth;
-using BoxHub.Domain.Entities;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 
-namespace BoxHub.Infrastructure.Security;
+namespace BoxHub.Infrastructure.Auth;
 
 public sealed class JwtService : IJwtService
 {
-    private readonly IConfiguration _configuration;
+    private readonly IConfiguration _config;
 
-    public JwtService(IConfiguration configuration)
+    public JwtService(IConfiguration config)
     {
-        _configuration = configuration;
+        _config = config;
     }
 
-    public AuthResponse GenerateAccessToken(User user)
+    public AuthResponse GenerateAccessToken(user user)
     {
-        var jwtSection = _configuration.GetSection("Jwt");
-        var key = jwtSection["Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
-        var issuer = jwtSection["Issuer"];
-        var audience = jwtSection["Audience"];
+        var jwtSection = _config.GetSection("Jwt");
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtSection["Key"]!));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expireMinutes = int.Parse(jwtSection["ExpireMinutes"] ?? "60");
 
-        var expireMinutes = int.TryParse(jwtSection["ExpireMinutes"], out var minutes)
-            ? minutes
-            : 60;
-
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-        var now = DateTime.UtcNow;
-        var expires = now.AddMinutes(expireMinutes);
-
-        var role = user.Role.ToString();
-
-        var claims = new List<Claim>
+        var claims = new[]
         {
-            new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-            new(JwtRegisteredClaimNames.Email, user.Email),
-            new(ClaimTypes.Role, role),
-            new("role", role),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Sub,   user.user_id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.email),
+            new Claim(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Role,               user.role)
         };
 
         var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
+            issuer: jwtSection["Issuer"],
+            audience: jwtSection["Audience"],
             claims: claims,
-            notBefore: now,
-            expires: expires,
-            signingCredentials: credentials);
-
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            expires: DateTime.UtcNow.AddMinutes(expireMinutes),
+            signingCredentials: creds
+        );
 
         return new AuthResponse
         {
-            AccessToken = tokenString,
-            ExpiresAt = expires
+            AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
+            ExpiresAt = token.ValidTo,
+            UserId = user.user_id,
+            Email = user.email,
+            Role = user.role
         };
     }
 }
-

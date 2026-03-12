@@ -1,9 +1,7 @@
 using BoxHub.Application.Auth;
-using BoxHub.Application.Common;
-using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
 using BoxHub.Infrastructure.Data;
-using BoxHub.Infrastructure.Security;
+using BoxHub.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,8 +23,11 @@ namespace BoxHub.API
             // Render PORT config
             // ===============================
 
-            var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-            builder.WebHost.UseUrls($"http://*:{port}");
+            if (!builder.Environment.IsDevelopment())
+            {
+                var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+                builder.WebHost.UseUrls($"http://*:{port}");
+            }
 
             var configuration = builder.Configuration;
             var environment = builder.Environment;
@@ -34,16 +35,21 @@ namespace BoxHub.API
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             // ===============================
-            // Controllers & Swagger
+            // Controllers
             // ===============================
             builder.Services.AddControllers();
+
+            // ===============================
+            // Swagger
+            // ===============================
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
                 {
                     Title = "BoxHub API",
-                    Version = "v1"
+                    Version = "v1.2"
                 });
 
                 // Khai baoBearer Authentication
@@ -101,10 +107,10 @@ namespace BoxHub.API
             var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
 
             // Map Postgres enum
-            dataSourceBuilder.MapEnum<UserRole>(
-                "core.user_role",
-                new NpgsqlNullNameTranslator()
-            );
+            //dataSourceBuilder.MapEnum<UserRole>(
+            //    "core.user_role",
+            //    new NpgsqlNullNameTranslator()
+            //);
 
             var dataSource = dataSourceBuilder.Build();
 
@@ -118,10 +124,6 @@ namespace BoxHub.API
                     options.EnableSensitiveDataLogging();
                 }
             });
-
-            // Mapping interface -> implementation
-            builder.Services.AddScoped<IApplicationDbContext>(provider =>
-                provider.GetRequiredService<BoxHubDbContext>());
 
             // ===============================
             // JWT Authentication
@@ -164,7 +166,7 @@ namespace BoxHub.API
                 });
 
             // ===============================
-            // Authorization (Policy-ready)
+            // Authorization
             // ===============================
             builder.Services.AddAuthorization(options =>
             {
@@ -173,18 +175,15 @@ namespace BoxHub.API
             });
 
             // ===============================
-            // Application services
+            // Infrastructure services (Repository, Auth, JWT...)
             // ===============================
-            builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-            builder.Services.AddScoped<IPasswordService, PasswordService>();
-            builder.Services.AddScoped<IJwtService, JwtService>();
-            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddInfrastructure(builder.Configuration);
 
+            // ===============================
+            // Build & Middleware pipeline
+            // ===============================
             var app = builder.Build();
 
-            // ===============================
-            // Middleware pipeline
-            // ===============================
             //if (app.Environment.IsDevelopment())
             //{
             //    app.UseSwagger();
@@ -196,7 +195,7 @@ namespace BoxHub.API
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "BoxHub API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "BoxHub API V1.2");
                 c.RoutePrefix = "swagger";
             });
 

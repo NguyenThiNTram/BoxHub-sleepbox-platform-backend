@@ -2,25 +2,18 @@ using BoxHub.Application.Auth;
 using BoxHub.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
-namespace BoxHub.Infrastructure.Security;
+namespace BoxHub.Infrastructure.Auth;
 
 public sealed class PasswordService : IPasswordService
 {
-    private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly PasswordHasher<object> _hasher = new();
 
-    public PasswordService(IPasswordHasher<User> passwordHasher)
+    public string HashPassword(string password)
+        => _hasher.HashPassword(null!, password);
+
+    public bool VerifyPassword(string hashedPassword, string inputPassword)
     {
-        _passwordHasher = passwordHasher;
-    }
-
-    public string HashPassword(User user, string password)
-        => _passwordHasher.HashPassword(user, password);
-
-    public bool VerifyPassword(User user, string hashedPassword, string providedPassword)
-    {
-        var result = _passwordHasher.VerifyHashedPassword(user, hashedPassword, providedPassword);
-        return result == PasswordVerificationResult.Success ||
-               result == PasswordVerificationResult.SuccessRehashNeeded;
+        var result = _hasher.VerifyHashedPassword(null!, hashedPassword, inputPassword);
+        return result != PasswordVerificationResult.Failed;
     }
 }
-
