@@ -895,9 +895,8 @@ public partial class BoxHubDbContext : DbContext
                     v => v.ToString().ToUpperInvariant(),
                     v => Enum.Parse<UserRole>(v, true));
             entity.Property(e => e.user_status)
+                .HasColumnType("character varying")
                 .HasDefaultValueSql("'ACTIVE'::character varying")
-                .HasColumnType("character varying");
-            entity.Property(e => e.user_status)
                 .HasConversion(
                     v => v.ToString().ToUpperInvariant(),
                     v => Enum.Parse<UserStatus>(v, true));

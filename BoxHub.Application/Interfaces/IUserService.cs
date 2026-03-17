@@ -6,11 +6,9 @@ namespace BoxHub.Application.Interfaces
     public interface IUserService
     {
         Task<UserProfileResponse> GetCurrentUserAsync(Guid userId, CancellationToken ct);
-
-        Task<UserProfileResponse> UpdateUserProfileAsync(
-            Guid userId,
-            UpdateUserProfileRequest request,
-            CancellationToken ct);
+        Task<UserProfileResponse> UpdateUserProfileAsync(Guid userId, UpdateUserProfileRequest request, CancellationToken ct);
+        Task DeactivateAccountAsync(Guid userId, CancellationToken ct);
+        Task ReactivateAccountAsync(Guid userId, CancellationToken ct);
     }
 }
 

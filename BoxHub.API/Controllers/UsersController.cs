@@ -48,6 +48,35 @@ public class UsersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpDelete("me")]
+    public async Task<ActionResult> DeleteMe(CancellationToken ct)
+    {
+        var userId = GetUserId();
+
+        if (userId == null)
+            return Unauthorized(ErrorFactory.Unauthorized(HttpContext));
+
+        await _userService.DeactivateAccountAsync(userId.Value, ct);
+
+        return NoContent();
+    }
+
+    [HttpPost("me/reactivate")]
+    public async Task<ActionResult> ReactivateMe(CancellationToken ct)
+    {
+        var userId = GetUserId();
+
+        if (userId == null)
+            return Unauthorized(ErrorFactory.Unauthorized(HttpContext));
+
+        await _userService.ReactivateAccountAsync(userId.Value, ct);
+
+        return Ok(new
+        {
+            message = "Account reactivated successfully"
+        });
+    }
+
     private Guid? GetUserId()
     {
         var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub)

@@ -13,5 +13,7 @@ namespace BoxHub.Shared.Errors
         public const string UsernameExists = "USERNAME_EXISTS";
         public const string ValidationFailed = "VALIDATION_FAILED";
         public const string ServerError = "SERVER_ERROR";
+        public const string UserInactive = "USER_INACTIVE";
+
     }
 }

@@ -3,6 +3,7 @@ using BoxHub.Application.DTOs.Requests.Users;
 using BoxHub.Application.DTOs.Responses.Users;
 using BoxHub.Application.Interfaces;
 using BoxHub.Domain.Entities;
+using BoxHub.Domain.Enums;
 using BoxHub.Shared.Errors;
 
 namespace BoxHub.Application.Services
@@ -87,6 +88,38 @@ namespace BoxHub.Application.Services
                 profile_id = Guid.NewGuid(),
                 user_id = userId
             };
+        }
+
+        public async Task DeactivateAccountAsync(Guid userId, CancellationToken ct)
+        {
+            var user = await _users.GetByIdAsync(userId, ct);
+
+            if (user == null)
+                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
+
+            if (user.user_status == UserStatus.Inactive)
+                throw new ApiException(ErrorCodes.UserInactive, "User already inactive", 400);
+
+            user.user_status = UserStatus.Inactive;
+            user.deleted_at = DateTime.UtcNow;
+
+            await _users.SaveChangesAsync(ct);
+        }
+
+        public async Task ReactivateAccountAsync(Guid userId, CancellationToken ct)
+        {
+            var user = await _users.GetByIdAsync(userId, ct);
+
+            if (user == null)
+                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
+
+            if (user.user_status == UserStatus.Active)
+                throw new ApiException(ErrorCodes.ValidationFailed, "User already active", 400);
+
+            user.user_status = UserStatus.Active;
+            user.deleted_at = null;
+
+            await _users.SaveChangesAsync(ct);
         }
 
         private static string? Normalize(string? value)

@@ -2,10 +2,9 @@ namespace BoxHub.Domain.Enums
 {
     public enum UserStatus
     {
-        Active,
-        Suspended,
-        Pending,
-        Deleted
+        Active = 1,
+        Suspended = 2,
+        Inactive = 3
     }
 }
 
