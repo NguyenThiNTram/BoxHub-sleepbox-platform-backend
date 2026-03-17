@@ -1,4 +1,3 @@
-﻿using BoxHub.Application.Auth;
 using BoxHub.Application.Interfaces;
 using BoxHub.Application.Services;
 using BoxHub.Infrastructure.Auth;
@@ -23,6 +22,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserService, UserService>();
 
             return services;
         }

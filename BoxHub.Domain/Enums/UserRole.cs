@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,10 +8,10 @@ namespace BoxHub.Domain.Enums
 {
     public enum UserRole
     {
-        GUEST,
-        HOST,
-        ADMIN,
-        MODERATOR,
-        STAFF
+        Guest,
+        Host,
+        Staff,
+        Moderator,
+        Admin
     }
 }

@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using BoxHub.Domain.Enums;
 
 namespace BoxHub.Domain.Entities;
 
@@ -15,9 +16,9 @@ public partial class user
 
     public string password_hash { get; set; } = null!;
 
-    public string role { get; set; } = null!;
+    public UserRole role { get; set; }
 
-    public string user_status { get; set; } = null!;
+    public UserStatus user_status { get; set; }
 
     public bool? is_email_verified { get; set; }
 

@@ -1,8 +1,8 @@
-﻿using BoxHub.Application.Auth;
 using BoxHub.Application.DTOs.Requests.Auths;
 using BoxHub.Application.DTOs.Responses;
 using BoxHub.Application.Interfaces;
 using BoxHub.Domain.Entities;
+using BoxHub.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +13,8 @@ namespace BoxHub.Application.Services
 {
     public class AuthService : IAuthService
     {
-        private const string GuestRole = "GUEST";
-        private const string ActiveStatus = "ACTIVE";
+        private const UserRole GuestRole = UserRole.Guest;
+        private const UserStatus ActiveStatus = UserStatus.Active;
 
         private readonly IUserRepository _users;
         private readonly IPasswordService _passwordService;

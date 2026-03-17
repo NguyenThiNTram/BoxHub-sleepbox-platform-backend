@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BoxHub.Domain.Entities;
+using BoxHub.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoxHub.Infrastructure.Data;
@@ -888,10 +889,18 @@ public partial class BoxHubDbContext : DbContext
             entity.Property(e => e.is_email_verified).HasDefaultValue(false);
             entity.Property(e => e.password_hash).HasColumnType("character varying");
             entity.Property(e => e.phone).HasColumnType("character varying");
-            entity.Property(e => e.role).HasColumnType("character varying");
+            entity.Property(e => e.role)
+                .HasColumnType("character varying")
+                .HasConversion(
+                    v => v.ToString().ToUpperInvariant(),
+                    v => Enum.Parse<UserRole>(v, true));
             entity.Property(e => e.user_status)
                 .HasDefaultValueSql("'ACTIVE'::character varying")
                 .HasColumnType("character varying");
+            entity.Property(e => e.user_status)
+                .HasConversion(
+                    v => v.ToString().ToUpperInvariant(),
+                    v => Enum.Parse<UserStatus>(v, true));
             entity.Property(e => e.username).HasColumnType("character varying");
         });
 

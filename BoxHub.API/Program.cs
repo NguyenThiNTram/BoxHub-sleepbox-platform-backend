@@ -1,10 +1,12 @@
-using BoxHub.Application.Auth;
-using BoxHub.Domain.Enums;
-using BoxHub.Infrastructure.Data;
+using AutoMapper;
+using BoxHub.Application.Mappers;
+using BoxHub.Application.Mappers;
 using BoxHub.Infrastructure;
+using BoxHub.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
@@ -175,9 +177,17 @@ namespace BoxHub.API
             });
 
             // ===============================
-            // Infrastructure services (Repository, Auth, JWT...)
+            // Infrastructure services
             // ===============================
             builder.Services.AddInfrastructure(builder.Configuration);
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<UserMappingProfile>();
+            }, builder.Logging.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>());
+
+            IMapper mapper = mapperConfig.CreateMapper();
+
+            builder.Services.AddSingleton(mapper);
 
             // ===============================
             // Build & Middleware pipeline

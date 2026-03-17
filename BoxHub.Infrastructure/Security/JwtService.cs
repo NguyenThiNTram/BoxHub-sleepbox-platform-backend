@@ -1,6 +1,7 @@
-using BoxHub.Application.Auth;
 using BoxHub.Application.DTOs.Responses;
+using BoxHub.Application.Interfaces;
 using BoxHub.Domain.Entities;
+using BoxHub.Domain.Enums;
 using BoxHub.Infrastructure.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -33,7 +34,7 @@ public sealed class JwtService : IJwtService
             new Claim(JwtRegisteredClaimNames.Sub,   user.user_id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.email),
             new Claim(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Role,               user.role)
+            new Claim(ClaimTypes.Role,               user.role.ToString().ToUpperInvariant())
         };
 
         var token = new JwtSecurityToken(
@@ -50,7 +51,7 @@ public sealed class JwtService : IJwtService
             ExpiresAt = token.ValidTo,
             UserId = user.user_id,
             Email = user.email,
-            Role = user.role
+            Role = user.role.ToString().ToUpperInvariant()
         };
     }
 }
