@@ -1,5 +1,5 @@
 using BoxHub.Application.DTOs.Requests.Users;
-using BoxHub.Application.Interfaces;
+using BoxHub.Application.Interfaces.Services;
 using BoxHub.Shared.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

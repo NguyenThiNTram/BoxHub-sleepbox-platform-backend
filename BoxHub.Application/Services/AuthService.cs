@@ -1,13 +1,10 @@
 using BoxHub.Application.DTOs.Requests.Auths;
 using BoxHub.Application.DTOs.Responses;
-using BoxHub.Application.Interfaces;
+using BoxHub.Application.Interfaces.Repositories;
+using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BoxHub.Shared.Errors;
 
 namespace BoxHub.Application.Services
 {
@@ -30,16 +27,59 @@ namespace BoxHub.Application.Services
             _jwtService = jwtService;
         }
 
-        public async Task<AuthResponse?> RegisterGuestAsync(
+        public async Task<AuthResponse> AuthenticateAsync(
+            string email,
+            string password,
+            CancellationToken ct)
+        {
+            // 1. Validate input
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+                throw new ApiException(ErrorCodes.ValidationFailed, "Email and password are required", 400);
+
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+
+            // 2. Get user
+            var user = await _users.GetByEmailAsync(normalizedEmail, ct);
+
+            // 3. Prevent user enumeration (same error)
+            if (user == null ||
+                string.IsNullOrEmpty(user.password_hash) ||
+                !_passwordService.VerifyPassword(user.password_hash, password))
+            {
+                throw new ApiException(ErrorCodes.Unauthorized, "Invalid email or password", 401);
+            }
+
+            // 4. Check status
+            if (user.user_status != ActiveStatus)
+            {
+                throw new ApiException(ErrorCodes.UserInactive, "User is inactive", 403);
+            }
+
+            // 5. Update last login
+            user.last_login_at = DateTime.UtcNow;
+            await _users.SaveChangesAsync(ct);
+
+            // 6. Generate token
+            return _jwtService.GenerateAccessToken(user);
+        }
+
+        public async Task<AuthResponse> RegisterGuestAsync(
             RegisterGuestRequest request,
             CancellationToken ct)
         {
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Password))
+            {
+                throw new ApiException(ErrorCodes.ValidationFailed, "Email and password are required", 400);
+            }
+
             var email = request.Email.Trim().ToLowerInvariant();
 
             var existing = await _users.GetByEmailAsync(email, ct);
-
             if (existing != null)
-                return null;
+            {
+                throw new ApiException(ErrorCodes.UsernameExists, "Email already exists", 409);
+            }
 
             var newUser = new user
             {
@@ -57,36 +97,6 @@ namespace BoxHub.Application.Services
             await _users.SaveChangesAsync(ct);
 
             return _jwtService.GenerateAccessToken(newUser);
-        }
-
-        public async Task<AuthResponse?> LoginGuestAsync(
-            LoginGuestRequest request,
-            CancellationToken ct)
-        {
-            var email = request.Email.Trim().ToLowerInvariant();
-
-            var user = await _users.GetByEmailAsync(email, ct);
-
-            if (user == null)
-                return null;
-
-            if (user.role != GuestRole)
-                return null;
-
-            if (user.user_status != ActiveStatus)
-                return null;
-
-            if (string.IsNullOrEmpty(user.password_hash) ||
-            !_passwordService.VerifyPassword(user.password_hash, request.Password))
-                    {
-                        return null;
-                    }
-
-            user.last_login_at = DateTime.UtcNow;
-
-            await _users.SaveChangesAsync(ct);
-
-            return _jwtService.GenerateAccessToken(user);
         }
 
         private static string BuildUsernameFromEmail(string email)

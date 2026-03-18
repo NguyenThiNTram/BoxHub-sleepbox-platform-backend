@@ -1,5 +1,5 @@
 using BoxHub.Application.DTOs.Responses;
-using BoxHub.Application.Interfaces;
+using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
 using BoxHub.Infrastructure.Data;

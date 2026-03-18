@@ -1,4 +1,6 @@
 using BoxHub.Application.Interfaces;
+using BoxHub.Application.Interfaces.Repositories;
+using BoxHub.Application.Interfaces.Services;
 using BoxHub.Application.Services;
 using BoxHub.Infrastructure.Auth;
 using BoxHub.Infrastructure.Repositories;
@@ -14,8 +16,7 @@ namespace BoxHub.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(
-            this IServiceCollection services,
+        public static IServiceCollection AddInfrastructure( this IServiceCollection services,
             IConfiguration config)
         {
             services.AddScoped<IUserRepository, UserRepository>();
@@ -23,6 +24,9 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAdminService, AdminService>();
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }

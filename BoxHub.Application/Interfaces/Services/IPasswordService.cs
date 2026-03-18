@@ -1,4 +1,4 @@
-namespace BoxHub.Application.Interfaces;
+namespace BoxHub.Application.Interfaces.Services;
 
 public interface IPasswordService
 {

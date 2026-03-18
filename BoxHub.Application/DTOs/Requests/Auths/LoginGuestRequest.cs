@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BoxHub.Application.DTOs.Requests.Auths
 {
-    public class LoginGuestRequest
+    public class LoginRequest
     {
         [Required]
         [EmailAddress]

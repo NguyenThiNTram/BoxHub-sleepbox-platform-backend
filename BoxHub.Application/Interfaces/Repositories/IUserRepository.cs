@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BoxHub.Application.Interfaces
+namespace BoxHub.Application.Interfaces.Repositories
 {
     public interface IUserRepository
     {

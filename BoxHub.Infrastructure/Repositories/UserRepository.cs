@@ -1,12 +1,12 @@
 using BoxHub.Domain.Entities;
 using BoxHub.Infrastructure.Data;
-using BoxHub.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BoxHub.Application.Interfaces.Repositories;
 
 namespace BoxHub.Infrastructure.Repositories
 {

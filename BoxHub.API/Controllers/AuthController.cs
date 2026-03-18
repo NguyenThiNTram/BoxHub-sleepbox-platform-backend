@@ -1,12 +1,12 @@
 using BoxHub.Application.DTOs.Requests.Auths;
 using BoxHub.Application.DTOs.Responses;
-using BoxHub.Application.Interfaces;
+using BoxHub.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoxHub.API.Controllers;
 
 [ApiController]
-[Route("api/auth/guest")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -16,14 +16,13 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    [HttpPost("register")]
-    //[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
-    //[ProducesResponseType(StatusCodes.Status409Conflict)]
-    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [HttpPost("guest/register")]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
     public async Task<IActionResult> Register(
-        RegisterGuestRequest request,
-        CancellationToken cancellationToken)
+        [FromBody] RegisterGuestRequest request,
+        CancellationToken ct)
     {
+        // Validate confirm password (presentation-level validation)
         if (request.Password != request.ConfirmPassword)
         {
             ModelState.AddModelError(
@@ -33,37 +32,21 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await _authService
-            .RegisterGuestAsync(request, cancellationToken);
+        var result = await _authService.RegisterGuestAsync(request, ct);
 
-        if (result is null)
-        {
-            return Conflict(new
-            {
-                error = "Email already exists."
-            });
-        }
-
-        return Created("", result);
+        return Created(string.Empty, result);
     }
 
-    [HttpPost("login")]
-    //[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
-    //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [HttpPost("All/login")]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Login(
-        LoginGuestRequest request,
-        CancellationToken cancellationToken)
+        [FromBody] LoginRequest request,
+        CancellationToken ct)
     {
-        var result = await _authService
-            .LoginGuestAsync(request, cancellationToken);
-
-        if (result is null)
-        {
-            return Unauthorized(new
-            {
-                error = "Invalid credentials or inactive account."
-            });
-        }
+        var result = await _authService.AuthenticateAsync(
+            request.Email,
+            request.Password,
+            ct);
 
         return Ok(result);
     }

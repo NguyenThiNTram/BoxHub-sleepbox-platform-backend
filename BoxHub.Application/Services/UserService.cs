@@ -1,7 +1,8 @@
 using AutoMapper;
 using BoxHub.Application.DTOs.Requests.Users;
 using BoxHub.Application.DTOs.Responses.Users;
-using BoxHub.Application.Interfaces;
+using BoxHub.Application.Interfaces.Repositories;
+using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
 using BoxHub.Shared.Errors;

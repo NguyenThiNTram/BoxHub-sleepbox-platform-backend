@@ -1,4 +1,4 @@
-using BoxHub.Application.Interfaces;
+using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
