@@ -19,9 +19,7 @@ namespace BoxHub.API.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> CreateAdmin(
-        [FromBody] CreateAdminRequest request,
-        CancellationToken ct)
+        public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ErrorFactory.Validation(HttpContext, ModelState));
@@ -29,6 +27,42 @@ namespace BoxHub.API.Controllers
             var userId = GetCurrentUserId();
 
             var result = await _adminService.CreateAdminAsync(userId, request, ct);
+
+            return Ok(result);
+        }
+
+        [HttpPatch("Users/{targetUserId}/Suspend")]
+        public async Task<IActionResult> SuspendUser([FromRoute] Guid targetUserId, CancellationToken ct)
+        {
+            var currentAdminId = GetCurrentUserId();
+
+            await _adminService.SuspendUserAsync(currentAdminId, targetUserId, ct);
+
+            return Ok(new { message = "Moderator account suspended successfully" });
+        }
+
+        [HttpPost("moderators/register")]
+        public async Task<IActionResult> CreateModerator([FromBody] CreateModeratorRequest request, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ErrorFactory.Validation(HttpContext, ModelState));
+
+            var adminId = GetCurrentUserId();
+
+            var result = await _adminService.CreateModeratorAsync(adminId, request, ct);
+
+            return Ok(result);
+        }
+
+        [HttpPut("moderators/{moderatorId}")]
+        public async Task<IActionResult> UpdateModerator(Guid moderatorId, [FromBody] UpdateModeratorRequest request, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ErrorFactory.Validation(HttpContext, ModelState));
+
+            var adminId = GetCurrentUserId();
+
+            var result = await _adminService.UpdateModeratorAsync(adminId, moderatorId, request, ct);
 
             return Ok(result);
         }
@@ -46,6 +80,18 @@ namespace BoxHub.API.Controllers
             }
 
             return userId;
+        }
+
+        [HttpGet("Users/Get-list")]
+        public async Task<IActionResult> GetUsers(
+            [FromQuery] GetUsersRequest request,
+            CancellationToken ct)
+        {
+            var adminId = GetCurrentUserId();
+
+            var result = await _adminService.GetUsersAsync(adminId, request, ct);
+
+            return Ok(result);
         }
     }
 }

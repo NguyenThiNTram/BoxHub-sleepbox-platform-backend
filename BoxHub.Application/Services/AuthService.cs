@@ -1,5 +1,6 @@
 using BoxHub.Application.DTOs.Requests.Auths;
 using BoxHub.Application.DTOs.Responses;
+using BoxHub.Application.Interfaces;
 using BoxHub.Application.Interfaces.Repositories;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
@@ -16,15 +17,14 @@ namespace BoxHub.Application.Services
         private readonly IUserRepository _users;
         private readonly IPasswordService _passwordService;
         private readonly IJwtService _jwtService;
+        private readonly IUnitOfWork _uow;
 
-        public AuthService(
-            IUserRepository users,
-            IPasswordService passwordService,
-            IJwtService jwtService)
+        public AuthService(IUserRepository users, IPasswordService passwordService, IJwtService jwtService, IUnitOfWork uow)
         {
             _users = users;
             _passwordService = passwordService;
             _jwtService = jwtService;
+            _uow = uow;
         }
 
         public async Task<AuthResponse> AuthenticateAsync(
@@ -57,7 +57,7 @@ namespace BoxHub.Application.Services
 
             // 5. Update last login
             user.last_login_at = DateTime.UtcNow;
-            await _users.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
 
             // 6. Generate token
             return _jwtService.GenerateAccessToken(user);
@@ -94,7 +94,7 @@ namespace BoxHub.Application.Services
             };
 
             await _users.AddAsync(newUser, ct);
-            await _users.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
 
             return _jwtService.GenerateAccessToken(newUser);
         }

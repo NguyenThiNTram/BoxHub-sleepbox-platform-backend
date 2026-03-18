@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BoxHub.Application.DTOs.Requests.Admins
 {
-    public class CreateAdminRequest
+    public class CreateModeratorRequest
     {
         [Required]
         public string Username { get; set; }
@@ -29,9 +29,9 @@ namespace BoxHub.Application.DTOs.Requests.Admins
         public DateOnly? DateOfBirth { get; set; }
 
         [Required]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [Required]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
     }
 }

@@ -1,11 +1,13 @@
 using AutoMapper;
 using BoxHub.Application.DTOs.Requests.Users;
 using BoxHub.Application.DTOs.Responses.Users;
+using BoxHub.Application.Interfaces;
 using BoxHub.Application.Interfaces.Repositories;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
 using BoxHub.Shared.Errors;
+using Microsoft.AspNetCore.Http;
 
 namespace BoxHub.Application.Services
 {
@@ -13,11 +15,13 @@ namespace BoxHub.Application.Services
     {
         private readonly IUserRepository _users;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _uow;
 
-        public UserService(IUserRepository users, IMapper mapper)
+        public UserService(IUserRepository users, IMapper mapper, IUnitOfWork uow)
         {
             _users = users;
             _mapper = mapper;
+            _uow = uow;
         }
 
         public async Task<UserProfileResponse> GetCurrentUserAsync(Guid userId, CancellationToken ct)
@@ -39,26 +43,69 @@ namespace BoxHub.Application.Services
             if (user == null)
                 throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
 
-            UpdateUser(user, request);
+            await _uow.BeginTransactionAsync(ct);
 
-            var profile = await _users.GetProfileAsync(userId, ct);
-
-            if (profile == null)
+            try
             {
-                profile = CreateProfile(userId);
-                UpdateProfile(profile, request);
+                UpdateUser(user, request);
 
-                await _users.CreateProfileAsync(profile, ct);
+                var profile = await _users.GetProfileAsync(userId, ct);
+
+                if (profile == null)
+                {
+                    profile = CreateProfile(userId);
+                    UpdateProfile(profile, request);
+
+                    await _users.CreateProfileAsync(profile, ct);
+                }
+                else
+                {
+                    UpdateProfile(profile, request);
+                    await _users.UpdateProfileAsync(profile, ct);
+                }
+
+                await _uow.SaveChangesAsync(ct);
+                await _uow.CommitAsync(ct);
+
+                return MapToResponse(user, profile);
             }
-            else
+            catch
             {
-                UpdateProfile(profile, request);
-                await _users.UpdateProfileAsync(profile, ct);
+                await _uow.RollbackAsync(ct);
+                throw;
             }
+        }
 
-            await _users.SaveChangesAsync(ct);
+        public async Task SoftDeleteAccountAsync(Guid userId, CancellationToken ct)
+        {
+            var user = await _users.GetByIdAsync(userId, ct);
 
-            return MapToResponse(user, profile);
+            if (user == null)
+                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
+
+            if (user.user_status == UserStatus.Inactive)
+                throw new ApiException(ErrorCodes.UserInactive, "User already inactive", 400);
+
+            user.user_status = UserStatus.Inactive;
+            user.deleted_at = DateTime.UtcNow;
+
+            await _uow.SaveChangesAsync(ct);
+        }
+
+        public async Task ReactivateAccountAsync(Guid userId, CancellationToken ct)
+        {
+            var user = await _users.GetByIdAsync(userId, ct);
+
+            if (user == null)
+                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
+
+            if (user.user_status == UserStatus.Active)
+                throw new ApiException(ErrorCodes.ValidationFailed, "User already active", 400);
+
+            user.user_status = UserStatus.Active;
+            user.deleted_at = null;
+
+            await _uow.SaveChangesAsync(ct);
         }
 
         private static void UpdateUser(user user, UpdateUserProfileRequest request)
@@ -89,38 +136,6 @@ namespace BoxHub.Application.Services
                 profile_id = Guid.NewGuid(),
                 user_id = userId
             };
-        }
-
-        public async Task DeactivateAccountAsync(Guid userId, CancellationToken ct)
-        {
-            var user = await _users.GetByIdAsync(userId, ct);
-
-            if (user == null)
-                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
-
-            if (user.user_status == UserStatus.Inactive)
-                throw new ApiException(ErrorCodes.UserInactive, "User already inactive", 400);
-
-            user.user_status = UserStatus.Inactive;
-            user.deleted_at = DateTime.UtcNow;
-
-            await _users.SaveChangesAsync(ct);
-        }
-
-        public async Task ReactivateAccountAsync(Guid userId, CancellationToken ct)
-        {
-            var user = await _users.GetByIdAsync(userId, ct);
-
-            if (user == null)
-                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
-
-            if (user.user_status == UserStatus.Active)
-                throw new ApiException(ErrorCodes.ValidationFailed, "User already active", 400);
-
-            user.user_status = UserStatus.Active;
-            user.deleted_at = null;
-
-            await _users.SaveChangesAsync(ct);
         }
 
         private static string? Normalize(string? value)

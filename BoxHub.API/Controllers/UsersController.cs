@@ -56,7 +56,7 @@ public class UsersController : ControllerBase
         if (userId == null)
             return Unauthorized(ErrorFactory.Unauthorized(HttpContext));
 
-        await _userService.DeactivateAccountAsync(userId.Value, ct);
+        await _userService.SoftDeleteAccountAsync(userId.Value, ct);
 
         return NoContent();
     }

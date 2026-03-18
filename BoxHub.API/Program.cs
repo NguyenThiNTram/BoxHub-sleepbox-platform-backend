@@ -39,7 +39,12 @@ namespace BoxHub.API
             // ===============================
             // Controllers
             // ===============================
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(
+                        new System.Text.Json.Serialization.JsonStringEnumConverter());
+                });
 
             // ===============================
             // Swagger
@@ -180,14 +185,17 @@ namespace BoxHub.API
             // Infrastructure services
             // ===============================
             builder.Services.AddInfrastructure(builder.Configuration);
+
             var mapperConfig = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<UserMappingProfile>();
+                cfg.AddProfile<AdminProfile>();
             }, builder.Logging.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>());
 
             IMapper mapper = mapperConfig.CreateMapper();
 
             builder.Services.AddSingleton(mapper);
+
 
             // ===============================
             // Build & Middleware pipeline

@@ -7,7 +7,7 @@ namespace BoxHub.Application.Interfaces.Services
     {
         Task<UserProfileResponse> GetCurrentUserAsync(Guid userId, CancellationToken ct);
         Task<UserProfileResponse> UpdateUserProfileAsync(Guid userId, UpdateUserProfileRequest request, CancellationToken ct);
-        Task DeactivateAccountAsync(Guid userId, CancellationToken ct);
+        Task SoftDeleteAccountAsync(Guid userId, CancellationToken ct);
         Task ReactivateAccountAsync(Guid userId, CancellationToken ct);
     }
 }

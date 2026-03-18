@@ -12,16 +12,16 @@ namespace BoxHub.Infrastructure
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly BoxHubDbContext _context;
+        private readonly BoxHubDbContext _db;
         private IDbContextTransaction? _transaction;
         public UnitOfWork(BoxHubDbContext context)
         {
-            _context = context;
+            _db = context;
         }
 
         public async Task BeginTransactionAsync(CancellationToken ct)
         {
-            _transaction = await _context.Database.BeginTransactionAsync(ct);
+            _transaction = await _db.Database.BeginTransactionAsync(ct);
         }
 
         public async Task CommitAsync(CancellationToken ct)
@@ -44,7 +44,7 @@ namespace BoxHub.Infrastructure
 
         public async Task SaveChangesAsync(CancellationToken ct)
         {
-            await _context.SaveChangesAsync(ct);
+            await _db.SaveChangesAsync(ct);
         }
     }
 

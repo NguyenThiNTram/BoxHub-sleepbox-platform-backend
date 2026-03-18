@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
         return Created(string.Empty, result);
     }
 
-    [HttpPost("All/login")]
+    [HttpPost("login")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request,
