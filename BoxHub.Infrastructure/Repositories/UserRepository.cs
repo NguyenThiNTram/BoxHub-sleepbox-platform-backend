@@ -22,6 +22,13 @@ namespace BoxHub.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.email == email, ct);
         }
 
+        public async Task<user?> GetByUsernameAsync(string username, CancellationToken ct)
+        {
+            return await _db.users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.username == username, ct);
+        }
+
         public async Task<user?> GetByIdAsync(Guid id, CancellationToken ct)
         {
             return await _db.users

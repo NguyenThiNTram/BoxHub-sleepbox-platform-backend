@@ -1,8 +1,12 @@
 using AutoMapper;
 using BoxHub.Application.Mappers;
-using BoxHub.Application.Mappers;
+using BoxHub.Application.Validators.Hosts;
 using BoxHub.Infrastructure;
 using BoxHub.Infrastructure.Data;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +49,9 @@ namespace BoxHub.API
                     options.JsonSerializerOptions.Converters.Add(
                         new System.Text.Json.Serialization.JsonStringEnumConverter());
                 });
+
+            builder.Services.AddFluentValidationAutoValidation();
+            builder.Services.AddValidatorsFromAssemblyContaining<VerifyOtpRequestValidator>();
 
             // ===============================
             // Swagger
@@ -185,6 +192,15 @@ namespace BoxHub.API
             // Infrastructure services
             // ===============================
             builder.Services.AddInfrastructure(builder.Configuration);
+
+            var hangfireConn = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string required for Hangfire.");
+            builder.Services.AddHangfire(cfg => cfg
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(hangfireConn));
+            builder.Services.AddHangfireServer();
 
             var mapperConfig = new MapperConfiguration(cfg =>
             {

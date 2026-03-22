@@ -1,8 +1,9 @@
-using System;
-using System.Collections.Generic;
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
+using BoxHub.Infrastructure.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 
 namespace BoxHub.Infrastructure.Data;
 
@@ -37,6 +38,8 @@ public partial class BoxHubDbContext : DbContext
 
     public virtual DbSet<dispute_attachment> dispute_attachments { get; set; }
 
+    public virtual DbSet<email_otp> email_otps { get; set; }
+
     public virtual DbSet<facility> facilities { get; set; }
 
     public virtual DbSet<facility_area> facility_areas { get; set; }
@@ -50,6 +53,8 @@ public partial class BoxHubDbContext : DbContext
     public virtual DbSet<host_payout_account> host_payout_accounts { get; set; }
 
     public virtual DbSet<host_profile> host_profiles { get; set; }
+
+    public virtual DbSet<host_registration_draft> host_registration_drafts { get; set; }
 
     public virtual DbSet<media_asset> media_assets { get; set; }
 
@@ -397,6 +402,30 @@ public partial class BoxHubDbContext : DbContext
                 .HasConstraintName("dispute_attachments_uploaded_by_fkey");
         });
 
+        modelBuilder.Entity<email_otp>(entity =>
+        {
+            entity.HasKey(e => e.otp_id).HasName("email_otps_pkey");
+
+            entity.HasIndex(e => e.email, "idx_email_otps_email");
+
+            entity.HasIndex(e => e.expire_at, "idx_email_otps_expire");
+
+            entity.Property(e => e.otp_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.attempt_count).HasDefaultValue(0);
+            entity.Property(e => e.created_at)
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp without time zone");
+            entity.Property(e => e.email).HasMaxLength(255);
+            entity.Property(e => e.expire_at).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.is_used).HasDefaultValue(false);
+            entity.Property(e => e.otp_code).HasMaxLength(6);
+            entity.Property(e => e.purpose)
+                .HasColumnType("character varying")
+                .HasConversion(
+                    v => v.ToString().ToUpperInvariant(),
+                    v => Enum.Parse<OTPPurpose>(v, true));
+        });
+
         modelBuilder.Entity<facility>(entity =>
         {
             entity.HasKey(e => e.facility_id).HasName("facilities_pkey");
@@ -577,6 +606,31 @@ public partial class BoxHubDbContext : DbContext
             entity.HasOne(d => d.verified_byNavigation).WithMany(p => p.host_profileverified_byNavigations)
                 .HasForeignKey(d => d.verified_by)
                 .HasConstraintName("fk_host_profiles_verified_by");
+        });
+
+        modelBuilder.Entity<host_registration_draft>(entity =>
+        {
+            entity.HasKey(e => e.draft_id).HasName("host_registration_drafts_pkey");
+
+            entity.HasIndex(e => e.email, "idx_draft_email");
+
+            entity.HasIndex(e => e.expire_at, "idx_draft_expire");
+
+            entity.Property(e => e.draft_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.created_at)
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp without time zone");
+            entity.Property(e => e.email).HasMaxLength(255);
+            entity.Property(e => e.expire_at).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.is_verified).HasDefaultValue(false);
+            entity.Property(e => e.payload).HasColumnType("jsonb");
+            entity.Property(e => e.phone).HasMaxLength(20);
+            entity.Property(e => e.updated_at).HasColumnType("timestamp without time zone");
+
+            entity.HasOne(d => d.otp).WithOne(p => p.draft)
+                .HasForeignKey<host_registration_draft>(d => d.otp_id)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("fk_draft_otp");
         });
 
         modelBuilder.Entity<media_asset>(entity =>
