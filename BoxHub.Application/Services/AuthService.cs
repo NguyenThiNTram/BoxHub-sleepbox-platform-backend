@@ -57,6 +57,8 @@ namespace BoxHub.Application.Services
 
             // 5. Update last login
             user.last_login_at = DateTime.UtcNow;
+
+            await _users.UpdateAsync(user, ct);
             await _uow.SaveChangesAsync(ct);
 
             // 6. Generate token

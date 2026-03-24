@@ -33,7 +33,7 @@ namespace BoxHub.Application.Services
 
             var profile = await _users.GetProfileAsync(userId, ct);
 
-            return MapToResponse(user, profile);
+            return _mapper.Map<UserProfileResponse>(user);
         }
 
         public async Task<UserProfileResponse> UpdateUserProfileAsync(Guid userId, UpdateUserProfileRequest request, CancellationToken ct)
@@ -67,7 +67,7 @@ namespace BoxHub.Application.Services
                 await _uow.SaveChangesAsync(ct);
                 await _uow.CommitAsync(ct);
 
-                return MapToResponse(user, profile);
+                return _mapper.Map<UserProfileResponse>(user);
             }
             catch
             {
@@ -141,24 +141,6 @@ namespace BoxHub.Application.Services
         private static string? Normalize(string? value)
         {
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-        }
-
-        private UserProfileResponse MapToResponse(user user, user_profile? profile)
-        {
-            var response = _mapper.Map<UserProfileResponse>(user);
-
-            if (profile != null)
-            {
-                response.FirstName = profile.first_name;
-                response.LastName = profile.last_name;
-                response.Gender = profile.gender;
-                response.AvatarUrl = profile.avatar_url;
-
-                if (profile.date_of_birth.HasValue)
-                    response.DateOfBirth = profile.date_of_birth;
-            }
-
-            return response;
         }
     }
 }

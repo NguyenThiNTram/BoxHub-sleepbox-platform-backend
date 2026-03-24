@@ -18,13 +18,21 @@ namespace BoxHub.Infrastructure.Repositories
         public async Task<user?> GetByEmailAsync(string email, CancellationToken ct)
         {
             return await _db.users
-                .AsNoTracking()
+                //.AsNoTracking()
                 .FirstOrDefaultAsync(u => u.email == email, ct);
+        }
+
+        public async Task<user?> GetByUsernameAsync(string username, CancellationToken ct)
+        {
+            return await _db.users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.username == username, ct);
         }
 
         public async Task<user?> GetByIdAsync(Guid id, CancellationToken ct)
         {
             return await _db.users
+                .Include(u => u.user_profile)
                 .FirstOrDefaultAsync(u => u.user_id == id, ct);
         }
 
@@ -110,10 +118,5 @@ namespace BoxHub.Infrastructure.Repositories
             _db.user_profiles.Update(profile);
             return Task.CompletedTask;
         }
-
-        //public Task SaveChangesAsync(CancellationToken ct)
-        //{
-        //    return _db.SaveChangesAsync(ct);
-        //}
     }
 }

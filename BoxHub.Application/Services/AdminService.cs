@@ -2,12 +2,14 @@
 using BoxHub.Application.DTOs.Requests.Admins;
 using BoxHub.Application.DTOs.Responses;
 using BoxHub.Application.DTOs.Responses.Admins;
+using BoxHub.Application.DTOs.Responses.Hosts;
 using BoxHub.Application.Interfaces;
 using BoxHub.Application.Interfaces.Repositories;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
 using BoxHub.Shared.Errors;
+using BoxHub.Shared.Results;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 
@@ -20,7 +22,11 @@ namespace BoxHub.Application.Services
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
-        public AdminService(IUserRepository userRepository, IPasswordService passwordService, IUnitOfWork uow, IMapper mapper)
+        public AdminService(
+            IUserRepository userRepository,
+            IPasswordService passwordService,
+            IUnitOfWork uow,
+            IMapper mapper)
         {
             _userRepository = userRepository;
             _passwordService = passwordService;
@@ -28,20 +34,21 @@ namespace BoxHub.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<CreateAdminResponse> CreateAdminAsync(Guid currentAdminId, CreateAdminRequest request, CancellationToken ct)
+        public async Task<Result<CreateAdminResponse>> CreateAdminAsync(Guid currentAdminId, CreateAdminRequest request, CancellationToken ct)
         {
-            // Validate current admin
-            await ValidateAdminAsync(currentAdminId, ct);
+            var adminResult = await ValidateAdminAsync(currentAdminId, ct);
+            if (!adminResult.IsSuccess)
+                return Result<CreateAdminResponse>.Failure(adminResult.ErrorCode!, adminResult.ErrorMessage!, adminResult.HttpStatus ?? 400);
 
             var existedEmail = await _userRepository.GetByEmailAsync(request.Email, ct);
             if (existedEmail != null)
-                throw new ApiException(ErrorCodes.EmailExists, "Email already exists", 409);
+                return Result<CreateAdminResponse>.Failure(ErrorCodes.EmailExists, "Email already exists", 409);
 
             await _uow.BeginTransactionAsync(ct);
 
             try
             {
-                var users = new user
+                var user = new user
                 {
                     user_id = Guid.NewGuid(),
                     username = request.Username,
@@ -54,13 +61,12 @@ namespace BoxHub.Application.Services
                     created_at = DateTime.UtcNow
                 };
 
-                await _userRepository.AddAsync(users, ct);
+                await _userRepository.AddAsync(user, ct);
 
-                // Create profile
                 var profile = new user_profile
                 {
                     profile_id = Guid.NewGuid(),
-                    user_id = users.user_id,
+                    user_id = user.user_id,
                     first_name = request.FirstName,
                     last_name = request.LastName,
                     gender = request.Gender,
@@ -72,31 +78,33 @@ namespace BoxHub.Application.Services
                 await _uow.SaveChangesAsync(ct);
                 await _uow.CommitAsync(ct);
 
-                return new CreateAdminResponse
+                return Result<CreateAdminResponse>.Success(new CreateAdminResponse
                 {
-                    UserId = users.user_id,
-                    Username = users.username,
-                    Email = users.email,
+                    UserId = user.user_id,
+                    Username = user.username,
+                    Email = user.email,
                     Gender = profile.gender,
                     DateOfBirth = profile.date_of_birth,
-                    Role = users.role.ToString(),
-                    CreatedAt = users.created_at,
-                };
+                    Role = user.role.ToString(),
+                    CreatedAt = user.created_at
+                });
             }
             catch
             {
                 await _uow.RollbackAsync(ct);
-                throw;
+                return Result<CreateAdminResponse>.Failure(ErrorCodes.ServerError, "Failed to create admin", 500);
             }
         }
 
-        public async Task<UserItemResponse> CreateModeratorAsync(Guid currentAdminId, CreateModeratorRequest request, CancellationToken ct)
+        public async Task<Result<UserItemResponse>> CreateModeratorAsync(Guid currentAdminId, CreateModeratorRequest request, CancellationToken ct)
         {
-            await ValidateAdminAsync(currentAdminId, ct);
+            var adminResult = await ValidateAdminAsync(currentAdminId, ct);
+            if (!adminResult.IsSuccess)
+                return Result<UserItemResponse>.Failure(adminResult.ErrorCode!, adminResult.ErrorMessage!, adminResult.HttpStatus ?? 400);
 
             var existedEmail = await _userRepository.GetByEmailAsync(request.Email, ct);
             if (existedEmail != null)
-                throw new ApiException(ErrorCodes.EmailExists, "Email already exists", 409);
+                return Result<UserItemResponse>.Failure(ErrorCodes.EmailExists, "Email already exists", 409);
 
             await _uow.BeginTransactionAsync(ct);
 
@@ -132,31 +140,32 @@ namespace BoxHub.Application.Services
                 await _uow.SaveChangesAsync(ct);
                 await _uow.CommitAsync(ct);
 
-                return _mapper.Map<UserItemResponse>(user);
+                return Result<UserItemResponse>.Success(_mapper.Map<UserItemResponse>(user));
             }
             catch
             {
                 await _uow.RollbackAsync(ct);
-                throw;
+                return Result<UserItemResponse>.Failure(ErrorCodes.ServerError, "Failed to create moderator", 500);
             }
         }
 
-        public async Task<UserItemResponse> UpdateModeratorAsync(Guid currentAdminId, Guid moderatorId, UpdateModeratorRequest request, CancellationToken ct)
+        public async Task<Result<UserItemResponse>> UpdateModeratorAsync(Guid currentAdminId, Guid moderatorId, UpdateModeratorRequest request, CancellationToken ct)
         {
-            await ValidateAdminAsync(currentAdminId, ct);
+            var adminResult = await ValidateAdminAsync(currentAdminId, ct);
+            if (!adminResult.IsSuccess)
+                return Result<UserItemResponse>.Failure(adminResult.ErrorCode!, adminResult.ErrorMessage!, adminResult.HttpStatus ?? 400);
 
             var user = await _userRepository.GetByIdAsync(moderatorId, ct);
             if (user == null)
-                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
+                return Result<UserItemResponse>.Failure(ErrorCodes.UserNotFound, "User not found", 404);
 
             if (user.role != UserRole.Moderator)
-                throw new ApiException(ErrorCodes.ValidationFailed, "User is not moderator", 400);
+                return Result<UserItemResponse>.Failure(ErrorCodes.ValidationFailed, "User is not moderator", 400);
 
             await _uow.BeginTransactionAsync(ct);
 
             try
             {
-                // Update basic info
                 if (!string.IsNullOrWhiteSpace(request.Username))
                     user.username = request.Username;
 
@@ -165,9 +174,7 @@ namespace BoxHub.Application.Services
 
                 await _userRepository.UpdateAsync(user, ct);
 
-                // Update profile
                 var profile = await _userRepository.GetProfileAsync(user.user_id, ct);
-
                 if (profile != null)
                 {
                     if (!string.IsNullOrWhiteSpace(request.FirstName))
@@ -182,69 +189,65 @@ namespace BoxHub.Application.Services
                 await _uow.SaveChangesAsync(ct);
                 await _uow.CommitAsync(ct);
 
-                return _mapper.Map<UserItemResponse>(user);
+                return Result<UserItemResponse>.Success(_mapper.Map<UserItemResponse>(user));
             }
             catch
             {
                 await _uow.RollbackAsync(ct);
-                throw;
+                return Result<UserItemResponse>.Failure(ErrorCodes.ServerError, "Failed to update moderator", 500);
             }
         }
 
-        public async Task<PagedResponse<UserItemResponse>> GetUsersAsync(Guid currentAdminId, GetUsersRequest request, CancellationToken ct)
+        public async Task<Result<PagedResponse<UserItemResponse>>> GetUsersAsync(Guid currentAdminId, GetUsersRequest request, CancellationToken ct)
         {
-            await ValidateAdminAsync(currentAdminId, ct);
+            var adminResult = await ValidateAdminAsync(currentAdminId, ct);
+            if (!adminResult.IsSuccess)
+                return Result<PagedResponse<UserItemResponse>>.Failure(adminResult.ErrorCode!, adminResult.ErrorMessage!, adminResult.HttpStatus ?? 400);
 
             var (users, totalCount) = await _userRepository.GetUsersAsync(request, ct);
 
-            var items = _mapper.Map<IEnumerable<UserItemResponse>>(users);
-
-            return new PagedResponse<UserItemResponse>
+            return Result<PagedResponse<UserItemResponse>>.Success(new PagedResponse<UserItemResponse>
             {
-                Items = items,
+                Items = _mapper.Map<IEnumerable<UserItemResponse>>(users),
                 TotalCount = totalCount,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize
-            };
+            });
         }
 
-        public async Task SuspendUserAsync(Guid currentAdminId, Guid targetUserId, CancellationToken ct)
+        public async Task<Result<SimpleMessageResponse>> SuspendUserAsync(Guid currentAdminId, Guid targetUserId, CancellationToken ct)
         {
-            //var currentAdmin = await _userRepository.GetByIdAsync(currentAdminId, ct);
-            var admin = await ValidateAdminAsync(currentAdminId, ct);
+            var adminResult = await ValidateAdminAsync(currentAdminId, ct);
+            if (!adminResult.IsSuccess)
+                return Result<SimpleMessageResponse>.Failure(adminResult.ErrorCode!, adminResult.ErrorMessage!, adminResult.HttpStatus ?? 400);
 
-            // Cannot suspend yourself
+            var admin = adminResult.Value!;
+
             if (currentAdminId == targetUserId)
-                throw new ApiException(ErrorCodes.ValidationFailed, "Cannot suspend yourself", 400);
-
+                return Result<SimpleMessageResponse>.Failure(ErrorCodes.ValidationFailed, "Cannot suspend yourself", 400);
 
             var targetUser = await _userRepository.GetByIdAsync(targetUserId, ct);
             if (targetUser == null)
-                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
+                return Result<SimpleMessageResponse>.Failure(ErrorCodes.UserNotFound, "User not found", 404);
 
             if (targetUser.role == UserRole.Admin)
-                throw new ApiException(ErrorCodes.ValidationFailed, "Cannot suspend admin", 403);
+                return Result<SimpleMessageResponse>.Failure(ErrorCodes.Forbidden, "Cannot suspend admin", 403);
 
-            // Admin can only suspend Moderators
             if (targetUser.role != UserRole.Moderator)
-                throw new ApiException(ErrorCodes.ValidationFailed,
-                    "Admin can only suspend moderators", 403);
+                return Result<SimpleMessageResponse>.Failure(ErrorCodes.Forbidden, "Only moderators can be suspended", 403);
 
-            // Check if already suspended
             if (targetUser.user_status == UserStatus.Suspended)
-                throw new ApiException(ErrorCodes.ValidationFailed, "User already suspended", 400);
+                return Result<SimpleMessageResponse>.Failure(ErrorCodes.ValidationFailed, "User already suspended", 400);
 
             await _uow.BeginTransactionAsync(ct);
 
             try
             {
-                // Update user status to SUSPENDED (not INACTIVE)
                 var oldStatus = targetUser.user_status;
                 targetUser.user_status = UserStatus.Suspended;
 
                 await _userRepository.UpdateAsync(targetUser, ct);
 
-                // Create audit log
                 var auditLog = new audit_log
                 {
                     audit_id = Guid.NewGuid(),
@@ -254,12 +257,7 @@ namespace BoxHub.Application.Services
                     target_type = "USER",
                     target_id = targetUserId,
                     old_value = JsonSerializer.Serialize(new { user_status = oldStatus }),
-                    new_value = JsonSerializer.Serialize(new
-                    {
-                        user_status = UserStatus.Suspended,
-                        suspended_at = DateTime.UtcNow
-                    }),
-                    note = $"Moderator suspended by Admin {admin.username}",
+                    new_value = JsonSerializer.Serialize(new { user_status = UserStatus.Suspended }),
                     created_at = DateTime.UtcNow
                 };
 
@@ -267,30 +265,34 @@ namespace BoxHub.Application.Services
 
                 await _uow.SaveChangesAsync(ct);
                 await _uow.CommitAsync(ct);
+
+                return Result<SimpleMessageResponse>.Success(new SimpleMessageResponse
+                {
+                    Success = true,
+                    Message = "User suspended successfully"
+                });
             }
             catch
             {
                 await _uow.RollbackAsync(ct);
-                throw;
+                return Result<SimpleMessageResponse>.Failure(ErrorCodes.ServerError, "Failed to suspend user", 500);
             }
         }
 
-        
-
-        private async Task<user> ValidateAdminAsync(Guid adminId, CancellationToken ct)
+        private async Task<Result<user>> ValidateAdminAsync(Guid adminId, CancellationToken ct)
         {
             var admin = await _userRepository.GetByIdAsync(adminId, ct);
 
             if (admin == null)
-                throw new ApiException(ErrorCodes.Unauthorized, "User not found", 401);
+                return Result<user>.Failure(ErrorCodes.Unauthorized, "User not found", 401);
 
             if (admin.role != UserRole.Admin)
-                throw new ApiException(ErrorCodes.Unauthorized, "Admin role required", 403);
+                return Result<user>.Failure(ErrorCodes.Forbidden, "Admin role required", 403);
 
             if (admin.user_status != UserStatus.Active)
-                throw new ApiException(ErrorCodes.UserInactive, "Admin is inactive", 403);
+                return Result<user>.Failure(ErrorCodes.UserInactive, "Admin is inactive", 403);
 
-            return admin;
+            return Result<user>.Success(admin);
         }
     }
 }

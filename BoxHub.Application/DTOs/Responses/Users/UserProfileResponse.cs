@@ -20,6 +20,14 @@ namespace BoxHub.Application.DTOs.Responses.Users
 
         public DateOnly? DateOfBirth { get; set; }
 
+        public string UserStatus { get; set; }
+
+        public bool IsEmailVerified { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime? LastLoginAt { get; set; }
+
         public string AvatarUrl { get; set; }
     }
 }

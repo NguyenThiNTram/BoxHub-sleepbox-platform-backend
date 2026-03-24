@@ -17,7 +17,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("guest/register")]
-    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
+    //[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
     public async Task<IActionResult> Register(
         [FromBody] RegisterGuestRequest request,
         CancellationToken ct)
@@ -38,7 +38,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    //[ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request,
         CancellationToken ct)

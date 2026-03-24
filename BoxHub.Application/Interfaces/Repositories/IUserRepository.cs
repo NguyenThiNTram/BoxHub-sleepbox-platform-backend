@@ -11,6 +11,7 @@ namespace BoxHub.Application.Interfaces.Repositories
     public interface IUserRepository
     {
         Task<user?> GetByEmailAsync(string email, CancellationToken ct);
+        Task<user?> GetByUsernameAsync(string username, CancellationToken ct);
         Task<user?> GetByIdAsync(Guid id, CancellationToken ct);
         Task AddAsync(user user, CancellationToken ct);
         //Task SaveChangesAsync(CancellationToken ct);
