@@ -10,5 +10,7 @@ namespace BoxHub.Domain.Entities
     {
         public Guid facility_id { get; set; }
         public int amenity_id { get; set; }
+        public facility facility { get; set; }
+        public amenity amenity { get; set; }
     }
 }

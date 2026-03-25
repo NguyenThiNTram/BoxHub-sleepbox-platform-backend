@@ -10,5 +10,7 @@ namespace BoxHub.Domain.Entities
     {
         public Guid box_id { get; set; }
         public int amenity_id { get; set; }
+        public sleepbox sleepbox { get; set; }
+        public amenity amenity { get; set; }
     }
 }

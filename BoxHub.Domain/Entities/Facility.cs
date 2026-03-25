@@ -55,5 +55,7 @@ public partial class facility
 
     public virtual ICollection<user_favorite> user_favorites { get; set; } = new List<user_favorite>();
 
-    public virtual ICollection<amenity> amenities { get; set; } = new List<amenity>();
+    //public virtual ICollection<amenity> amenities { get; set; } = new List<amenity>();
+
+    public ICollection<facility_amenity> facility_amenities { get; set; }
 }

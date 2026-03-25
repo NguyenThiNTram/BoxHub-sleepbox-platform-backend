@@ -119,11 +119,7 @@ public partial class BoxHubDbContext : DbContext
             .HasPostgresExtension("btree_gist")
             .HasPostgresExtension("vault", "supabase_vault");
 
-        modelBuilder.Entity<facility_amenity>()
-            .HasKey(x => new { x.facility_id, x.amenity_id });
-
-        modelBuilder.Entity<sleepbox_amenity>()
-            .HasKey(x => new { x.box_id, x.amenity_id });
+        
 
         modelBuilder.Entity<addon_service>(entity =>
         {
@@ -459,21 +455,34 @@ public partial class BoxHubDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("facilities_brand_id_fkey");
 
-            entity.HasMany(d => d.amenities).WithMany(p => p.facilities)
-                .UsingEntity<Dictionary<string, object>>(
-                    "facility_amenity",
-                    r => r.HasOne<amenity>().WithMany()
-                        .HasForeignKey("amenity_id")
-                        .HasConstraintName("facility_amenities_amenity_id_fkey"),
-                    l => l.HasOne<facility>().WithMany()
-                        .HasForeignKey("facility_id")
-                        .HasConstraintName("facility_amenities_facility_id_fkey"),
-                    j =>
-                    {
-                        j.HasKey("facility_id", "amenity_id").HasName("facility_amenities_pkey");
-                        j.ToTable("facility_amenities");
-                    });
+            //entity.HasMany(d => d.amenities).WithMany(p => p.facilities)
+            //    .UsingEntity<Dictionary<string, object>>(
+            //        "facility_amenity",
+            //        r => r.HasOne<amenity>().WithMany()
+            //            .HasForeignKey("amenity_id")
+            //            .HasConstraintName("facility_amenities_amenity_id_fkey"),
+            //        l => l.HasOne<facility>().WithMany()
+            //            .HasForeignKey("facility_id")
+            //            .HasConstraintName("facility_amenities_facility_id_fkey"),
+            //        j =>
+            //        {
+            //            j.HasKey("facility_id", "amenity_id").HasName("facility_amenities_pkey");
+            //            j.ToTable("facility_amenities");
+            //        });
         });
+
+        modelBuilder.Entity<facility_amenity>()
+            .HasKey(x => new { x.facility_id, x.amenity_id });
+
+        modelBuilder.Entity<facility_amenity>()
+            .HasOne(fa => fa.facility)
+            .WithMany(f => f.facility_amenities)
+            .HasForeignKey(fa => fa.facility_id);
+
+        modelBuilder.Entity<facility_amenity>()
+            .HasOne(fa => fa.amenity)
+            .WithMany(a => a.facility_amenities)
+            .HasForeignKey(fa => fa.amenity_id);
 
         modelBuilder.Entity<facility_area>(entity =>
         {
@@ -870,21 +879,34 @@ public partial class BoxHubDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("sleepbox_area_id_fkey");
 
-            entity.HasMany(d => d.amenities).WithMany(p => p.boxes)
-                .UsingEntity<Dictionary<string, object>>(
-                    "sleepbox_amenity",
-                    r => r.HasOne<amenity>().WithMany()
-                        .HasForeignKey("amenity_id")
-                        .HasConstraintName("sleepbox_amenities_amenity_id_fkey"),
-                    l => l.HasOne<sleepbox>().WithMany()
-                        .HasForeignKey("box_id")
-                        .HasConstraintName("sleepbox_amenities_box_id_fkey"),
-                    j =>
-                    {
-                        j.HasKey("box_id", "amenity_id").HasName("sleepbox_amenities_pkey");
-                        j.ToTable("sleepbox_amenities");
-                    });
+            //entity.HasMany(d => d.amenities).WithMany(p => p.boxes)
+            //    .UsingEntity<Dictionary<string, object>>(
+            //        "sleepbox_amenity",
+            //        r => r.HasOne<amenity>().WithMany()
+            //            .HasForeignKey("amenity_id")
+            //            .HasConstraintName("sleepbox_amenities_amenity_id_fkey"),
+            //        l => l.HasOne<sleepbox>().WithMany()
+            //            .HasForeignKey("box_id")
+            //            .HasConstraintName("sleepbox_amenities_box_id_fkey"),
+            //        j =>
+            //        {
+            //            j.HasKey("box_id", "amenity_id").HasName("sleepbox_amenities_pkey");
+            //            j.ToTable("sleepbox_amenities");
+            //        });
         });
+
+        modelBuilder.Entity<sleepbox_amenity>()
+            .HasKey(x => new { x.box_id, x.amenity_id });
+
+        modelBuilder.Entity<sleepbox_amenity>()
+            .HasOne(sa => sa.sleepbox)
+            .WithMany(sb => sb.sleepbox_amenities)
+            .HasForeignKey(sa => sa.box_id);
+
+        modelBuilder.Entity<sleepbox_amenity>()
+            .HasOne(sa => sa.amenity)
+            .WithMany(a => a.sleepbox_amenities)
+            .HasForeignKey(sa => sa.amenity_id);
 
         modelBuilder.Entity<staff_profile>(entity =>
         {

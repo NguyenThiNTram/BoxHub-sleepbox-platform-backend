@@ -37,5 +37,7 @@ public partial class sleepbox
 
     public virtual ICollection<box_availability> box_availabilities { get; set; } = new List<box_availability>();
 
-    public virtual ICollection<amenity> amenities { get; set; } = new List<amenity>();
+    //public virtual ICollection<amenity> amenities { get; set; } = new List<amenity>();
+
+    public ICollection<sleepbox_amenity> sleepbox_amenities { get; set; }
 }

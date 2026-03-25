@@ -51,7 +51,10 @@ namespace BoxHub.Infrastructure.Repositories
             {
                 query = query.Where(f =>
                     _db.sleepboxes.Any(sb =>
-                        sb.area_id == sb.area_id &&
+                        _db.facility_areas.Any(a =>
+                            a.area_id == sb.area_id &&
+                            a.facility_id == f.facility_id
+                        ) &&
                         sb.box_type == request.BoxType));
             }
 

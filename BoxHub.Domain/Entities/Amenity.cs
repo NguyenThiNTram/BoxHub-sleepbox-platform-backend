@@ -13,7 +13,10 @@ public partial class amenity
 
     public string? description { get; set; }
 
-    public virtual ICollection<sleepbox> boxes { get; set; } = new List<sleepbox>();
+    //public virtual ICollection<sleepbox> boxes { get; set; } = new List<sleepbox>();
 
-    public virtual ICollection<facility> facilities { get; set; } = new List<facility>();
+    //public virtual ICollection<facility> facilities { get; set; } = new List<facility>();
+
+    public ICollection<facility_amenity> facility_amenities { get; set; }
+    public ICollection<sleepbox_amenity> sleepbox_amenities { get; set; }
 }
