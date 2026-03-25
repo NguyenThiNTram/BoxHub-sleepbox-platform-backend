@@ -94,6 +94,9 @@ public partial class BoxHubDbContext : DbContext
 
     public virtual DbSet<withdrawal_request> withdrawal_requests { get; set; }
 
+    public virtual DbSet<facility_amenity> facility_amenities { get; set; }
+    public virtual DbSet<sleepbox_amenity> sleepbox_amenities { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -115,6 +118,12 @@ public partial class BoxHubDbContext : DbContext
             .HasPostgresExtension("graphql", "pg_graphql")
             .HasPostgresExtension("btree_gist")
             .HasPostgresExtension("vault", "supabase_vault");
+
+        modelBuilder.Entity<facility_amenity>()
+            .HasKey(x => new { x.facility_id, x.amenity_id });
+
+        modelBuilder.Entity<sleepbox_amenity>()
+            .HasKey(x => new { x.box_id, x.amenity_id });
 
         modelBuilder.Entity<addon_service>(entity =>
         {

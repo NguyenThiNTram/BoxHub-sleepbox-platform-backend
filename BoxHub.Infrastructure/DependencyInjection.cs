@@ -22,19 +22,29 @@ namespace BoxHub.Infrastructure
         public static IServiceCollection AddInfrastructure( this IServiceCollection services,
             IConfiguration config)
         {
+            //REPO
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IHostRegistrationRepository, HostRegistrationRepository>();
+            services.AddScoped<IFacilityRepository, FacilityRepository>();
+
+            //SERVICE
+
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAdminService, AdminService>();
-            services.AddScoped<IHostRegistrationRepository, HostRegistrationRepository>();
             services.AddScoped<IHostRegistrationService, HostRegistrationService>();
             services.AddScoped<ICreateHostAccountWorker, CreateHostAccountWorker>();
-            services.AddSingleton<IHostRegistrationJobClient, HostRegistrationJobClient>();
-            services.AddTransient<CreateHostAccountJob>();
+            services.AddScoped <IFacilityService, FacilityService>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddSingleton<IHostRegistrationJobClient, HostRegistrationJobClient>();
+            
+            services.AddTransient<CreateHostAccountJob>();
+
+            
 
             // Phải khớp key trong appsettings.json (đang là "CloudSettings", không phải "Cloudinary").
             services.Configure<CloudSettings>(config.GetSection("CloudSettings"));
