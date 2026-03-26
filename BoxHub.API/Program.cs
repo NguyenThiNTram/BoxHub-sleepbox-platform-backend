@@ -199,7 +199,10 @@ namespace BoxHub.API
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
-                .UsePostgreSqlStorage(hangfireConn));
+                .UsePostgreSqlStorage(options =>
+                {
+                    options.UseNpgsqlConnection(hangfireConn + ";SSL Mode=Require;Trust Server Certificate=true");
+                }));
             builder.Services.AddHangfireServer();
 
             var mapperConfig = new MapperConfiguration(cfg =>
