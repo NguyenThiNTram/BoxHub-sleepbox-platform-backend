@@ -21,6 +21,8 @@ public partial class pricing_factor
 
     public decimal? max_factor { get; set; }
 
+    public decimal base_factor { get; set; }
+
     public int? priority { get; set; }
 
     public bool? is_active { get; set; }

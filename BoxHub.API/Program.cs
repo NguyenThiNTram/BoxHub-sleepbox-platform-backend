@@ -206,6 +206,7 @@ namespace BoxHub.API
             {
                 cfg.AddProfile<UserMappingProfile>();
                 cfg.AddProfile<AdminProfile>();
+                cfg.AddProfile<PricingProfile>();
             }, builder.Logging.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>());
 
             IMapper mapper = mapperConfig.CreateMapper();

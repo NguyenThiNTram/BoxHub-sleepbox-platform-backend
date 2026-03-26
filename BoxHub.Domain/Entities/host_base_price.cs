@@ -11,7 +11,9 @@ public partial class host_base_price
 
     public Guid facility_id { get; set; }
 
-    public string box_type { get; set; } = null!;
+    public string capacity_type { get; set; } = null!;
+
+    public string box_class { get; set; } = null!;
 
     public decimal? base_hour_price { get; set; }
 

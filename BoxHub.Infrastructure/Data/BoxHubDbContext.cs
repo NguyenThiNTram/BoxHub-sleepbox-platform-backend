@@ -82,6 +82,8 @@ public partial class BoxHubDbContext : DbContext
 
     public virtual DbSet<system_price_rule> system_price_rules { get; set; }
 
+    public virtual DbSet<system_box_type_price_limit> system_box_type_price_limits { get; set; }
+
     public virtual DbSet<user> users { get; set; }
 
     public virtual DbSet<user_favorite> user_favorites { get; set; }
@@ -534,12 +536,11 @@ public partial class BoxHubDbContext : DbContext
 
             entity.HasIndex(e => e.facility_id, "idx_host_base_prices_facility");
 
-            entity.HasIndex(e => new { e.facility_id, e.rule_id, e.box_type }, "ux_host_base_price").IsUnique();
-
             entity.Property(e => e.host_price_id).HasDefaultValueSql("gen_random_uuid()");
             entity.Property(e => e.base_hour_price).HasPrecision(12, 2);
             entity.Property(e => e.base_overnight_price).HasPrecision(12, 2);
-            entity.Property(e => e.box_type).HasColumnType("character varying");
+            entity.Property(e => e.capacity_type).HasColumnType("character varying");
+            entity.Property(e => e.box_class).HasColumnType("character varying");
             entity.Property(e => e.created_at).HasDefaultValueSql("now()");
             entity.Property(e => e.is_active).HasDefaultValue(true);
 
@@ -821,6 +822,7 @@ public partial class BoxHubDbContext : DbContext
             entity.Property(e => e.is_active).HasDefaultValue(true);
             entity.Property(e => e.max_factor).HasPrecision(3, 2);
             entity.Property(e => e.min_factor).HasPrecision(3, 2);
+            entity.Property(e => e.base_factor).HasPrecision(3, 2).IsRequired();
             entity.Property(e => e.priority).HasDefaultValue(0);
             entity.Property(e => e.ref_code).HasColumnType("character varying");
 
@@ -958,6 +960,31 @@ public partial class BoxHubDbContext : DbContext
             entity.Property(e => e.min_price).HasPrecision(12, 2);
             entity.Property(e => e.pricing_mode).HasColumnType("character varying");
             entity.Property(e => e.priority).HasDefaultValue(0);
+        });
+
+        modelBuilder.Entity<system_box_type_price_limit>(entity =>
+        {
+            entity.HasKey(e => e.limit_id).HasName("system_box_type_price_limits_pkey");
+
+            entity.ToTable("system_box_type_price_limits");
+
+            entity.Property(e => e.limit_id).HasDefaultValueSql("gen_random_uuid()");
+
+            entity.Property(e => e.capacity_type).HasColumnType("character varying").IsRequired().HasConversion<string>();
+
+            entity.Property(e => e.box_class).HasColumnType("character varying").IsRequired().HasConversion<string>();
+
+            entity.Property(e => e.min_price).HasPrecision(12, 2).IsRequired();
+
+            entity.Property(e => e.max_price).HasPrecision(12, 2).IsRequired();
+
+            entity.Property(e => e.is_active).HasDefaultValue(true);
+
+            // UNIQUE (capacity_type, box_class)
+            entity.HasIndex(e => new { e.capacity_type, e.box_class }, "ux_capacity_class").IsUnique();
+
+            // CHECK constraint
+            entity.HasCheckConstraint("ck_price_range", "max_price > min_price");
         });
 
         modelBuilder.Entity<user>(entity =>

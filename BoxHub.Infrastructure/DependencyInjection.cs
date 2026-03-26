@@ -26,6 +26,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IHostRegistrationRepository, HostRegistrationRepository>();
             services.AddScoped<IFacilityRepository, FacilityRepository>();
+            services.AddScoped<IBoxTypePriceLimitRepository, BoxTypePriceLimitRepository>();
 
             //SERVICE
 
@@ -37,8 +38,10 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IHostRegistrationService, HostRegistrationService>();
             services.AddScoped<ICreateHostAccountWorker, CreateHostAccountWorker>();
             services.AddScoped <IFacilityService, FacilityService>();
+            services.AddScoped<IBoxTypePriceLimitService, BoxTypePriceLimitService>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 
             services.AddSingleton<IHostRegistrationJobClient, HostRegistrationJobClient>();
             
