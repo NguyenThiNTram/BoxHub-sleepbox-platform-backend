@@ -14,5 +14,8 @@ namespace BoxHub.Application.Interfaces.Services
 
         /// <summary>PDF / giấy tờ — ResourceType Raw.</summary>
         Task<string?> UploadDocumentAsync(IFormFile file);
+
+        /// <summary>PDF / giấy tờ — ResourceType Raw (nhiều file).</summary>
+        Task<List<string>> UploadDocumentsAsync(List<IFormFile> files);
     }
 }

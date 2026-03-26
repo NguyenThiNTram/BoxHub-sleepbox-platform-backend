@@ -32,9 +32,15 @@ public sealed class HostRegisterController : ControllerBase
     /// <summary>GET /api/host/register/draft/{draftId} — lấy dữ liệu đã lưu để fill form (token query hoặc header).</summary>
     [HttpGet("draft/{draftId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetDraftForEdit([FromRoute] Guid draftId, CancellationToken ct)
+    public async Task<IActionResult> GetDraftForEdit(
+        [FromRoute] Guid draftId,
+        [FromQuery(Name = "token")] string? tokenFromQuery,
+        CancellationToken ct)
     {
-        var token = ReadTokenFromQueryOrHeader();
+        // Ưu tiên token truyền qua query để Swagger UI dễ test.
+        var token = !string.IsNullOrWhiteSpace(tokenFromQuery)
+            ? tokenFromQuery
+            : ReadTokenFromQueryOrHeader();
         var result = await _hostRegistration.GetDraftForEditAsync(draftId, token, ct);
         if (!result.IsSuccess)
             return ProblemResult(result.ErrorCode, result.ErrorMessage, result.HttpStatus ?? 400);
@@ -47,9 +53,12 @@ public sealed class HostRegisterController : ControllerBase
     public async Task<IActionResult> UpdateDraft(
         [FromRoute] Guid draftId,
         [FromForm] RegisterHostDraftForm form,
+        [FromQuery(Name = "token")] string? tokenFromQuery,
         CancellationToken ct)
     {
-        var token = ReadTokenFromQueryOrHeader();
+        var token = !string.IsNullOrWhiteSpace(tokenFromQuery)
+            ? tokenFromQuery
+            : ReadTokenFromQueryOrHeader();
         var result = await _hostRegistration.UpdateDraftAsync(draftId, token, form, ct);
         if (!result.IsSuccess)
             return ProblemResult(result.ErrorCode, result.ErrorMessage, result.HttpStatus ?? 400);
@@ -59,6 +68,21 @@ public sealed class HostRegisterController : ControllerBase
 
     private string? ReadTokenFromQueryOrHeader()
     {
+        // Swagger "Authorize" thường truyền Authorization: Bearer <token>
+        if (Request.Headers.TryGetValue("Authorization", out var auth)
+            && !string.IsNullOrWhiteSpace(auth))
+        {
+            var value = auth.ToString().Trim();
+            // Hỗ trợ cả "Bearer <token>" và "<token>" (không cần Bearer).
+            if (value.StartsWith("Bearer", StringComparison.OrdinalIgnoreCase))
+            {
+                var rest = value.Substring("Bearer".Length).Trim();
+                if (!string.IsNullOrWhiteSpace(rest))
+                    return rest;
+            }
+            return value;
+        }
+
         if (Request.Headers.TryGetValue("token", out var h) && !string.IsNullOrWhiteSpace(h))
             return h.ToString();
         return Request.Query["token"].FirstOrDefault();

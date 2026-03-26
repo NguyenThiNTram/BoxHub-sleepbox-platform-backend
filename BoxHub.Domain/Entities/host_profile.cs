@@ -9,13 +9,25 @@ public partial class host_profile
 
     public Guid user_id { get; set; }
 
-    public string? representative_name { get; set; }
+    public DateTime? submitted_at { get; set; }
+
+    public string? representative_id_name { get; set; }
 
     public string? representative_id_number { get; set; }
 
+    public string? representative_front_url { get; set; }
+
+    public string? representative_back_url { get; set; }
+
     public string? tax_code { get; set; }
 
-    public string? business_address { get; set; }
+    public string? business_name { get; set; }
+
+    public string? address_district { get; set; }
+
+    public string? address_ward { get; set; }
+
+    public string? address_detail { get; set; }
 
     public string? verified_status { get; set; }
 
@@ -23,7 +35,7 @@ public partial class host_profile
 
     public Guid? verified_by { get; set; }
 
-    public string? verified_note { get; set; }
+    public string? reject_reason { get; set; }
 
     public DateTime created_at { get; set; }
 

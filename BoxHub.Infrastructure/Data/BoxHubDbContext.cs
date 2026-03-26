@@ -590,6 +590,7 @@ public partial class BoxHubDbContext : DbContext
             entity.Property(e => e.account_name).HasColumnType("character varying");
             entity.Property(e => e.account_number).HasColumnType("character varying");
             entity.Property(e => e.bank_name).HasColumnType("character varying");
+            entity.Property(e => e.bank_branch).HasColumnType("character varying");
             entity.Property(e => e.created_at).HasDefaultValueSql("now()");
             entity.Property(e => e.is_primary).HasDefaultValue(false);
             entity.Property(e => e.payment_method).HasColumnType("character varying");
@@ -605,13 +606,19 @@ public partial class BoxHubDbContext : DbContext
             entity.HasKey(e => e.host_id).HasName("host_profiles_pkey");
 
             entity.HasIndex(e => e.user_id, "host_profiles_user_id_key").IsUnique();
-
+            entity.HasIndex(e => e.representative_id_number, "idx_host_profiles_representative_id_number").IsUnique();
             entity.Property(e => e.host_id).HasDefaultValueSql("gen_random_uuid()");
-            entity.Property(e => e.business_address).HasColumnType("character varying");
             entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.representative_id_name).HasColumnType("character varying");
             entity.Property(e => e.representative_id_number).HasColumnType("character varying");
-            entity.Property(e => e.representative_name).HasColumnType("character varying");
             entity.Property(e => e.tax_code).HasColumnType("character varying");
+            entity.Property(e => e.representative_front_url).HasColumnType("character varying");
+            entity.Property(e => e.representative_back_url).HasColumnType("character varying");
+            entity.Property(e => e.business_name).HasColumnType("character varying");
+            entity.Property(e => e.address_district).HasColumnType("character varying");
+            entity.Property(e => e.address_ward).HasColumnType("character varying");
+            entity.Property(e => e.address_detail).HasColumnType("text");
+            entity.Property(e => e.reject_reason).HasColumnType("text");
             entity.Property(e => e.verified_status)
                 .HasDefaultValueSql("'PENDING'::character varying")
                 .HasColumnType("character varying");

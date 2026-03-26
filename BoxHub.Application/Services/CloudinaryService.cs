@@ -87,5 +87,21 @@ namespace BoxHub.Application.Services
                 throw new Exception("Failed to upload document to Cloudinary.", ex);
             }
         }
+
+        public async Task<List<string>> UploadDocumentsAsync(List<IFormFile> files)
+        {
+            var urls = new List<string>();
+            if (files == null || files.Count == 0)
+                return urls;
+
+            foreach (var file in files)
+            {
+                var url = await UploadDocumentAsync(file);
+                if (!string.IsNullOrWhiteSpace(url))
+                    urls.Add(url);
+            }
+
+            return urls;
+        }
     }
 }

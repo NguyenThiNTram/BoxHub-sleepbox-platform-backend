@@ -10,13 +10,31 @@ public sealed class HostDraftPayloadModel
     public string? Phone { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
-    public string? Gender { get; set; }
-    /// <summary>Chuỗi ngày yyyy-MM-dd.</summary>
-    public string? DateOfBirth { get; set; }
-    public string? RepresentativeName { get; set; }
+
+    // --- Host profile ---
+    public string? RepresentativeIdName { get; set; }
     public string? RepresentativeIdNumber { get; set; }
+    public string? RepresentativeFrontUrl { get; set; }
+    public string? RepresentativeBackUrl { get; set; }
     public string? TaxCode { get; set; }
-    public string? BusinessAddress { get; set; }
+    public string? BusinessName { get; set; }
+
+    // --- Address ---
+    public string? AddressDistrict { get; set; }
+    public string? AddressWard { get; set; }
+    public string? AddressDetail { get; set; }
+
+    // --- Brand ---
+    public string? BrandName { get; set; }
+    public string? BrandAvatarUrl { get; set; }
+
+    // --- Payout account ---
+    /// <summary>Giá trị enum string (ví dụ: BANK_TRANSFER / PAY_AT_BASE).</summary>
+    public string? PaymentMethod { get; set; }
+    public string? BankName { get; set; }
+    public string? BankBranch { get; set; }
+    public string? AccountNumber { get; set; }
+    public string? AccountName { get; set; }
 
     public List<HostDraftDocumentModel> Documents { get; set; } = new();
 
