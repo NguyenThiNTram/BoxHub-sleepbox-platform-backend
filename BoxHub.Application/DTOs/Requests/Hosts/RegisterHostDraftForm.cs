@@ -58,17 +58,8 @@ public sealed class RegisterHostDraftForm
     [FromForm(Name = "address_detail")]
     public string? AddressDetail { get; set; }
 
-    [FromForm(Name = "business_license")]
-    public IFormFile? BusinessLicenseFile { get; set; }
-
-    [FromForm(Name = "tax_certificate")]
-    public IFormFile? TaxCertificateFile { get; set; }
-
     [FromForm(Name = "company_registration")]
     public IFormFile? CompanyRegistrationFile { get; set; }
-
-    [FromForm(Name = "pccc")]
-    public IFormFile? PcccFile { get; set; }
 
     // --- Payout / bank account ---
     [FromForm(Name = "bank_name")]

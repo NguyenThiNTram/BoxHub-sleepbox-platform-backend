@@ -44,6 +44,8 @@ public partial class BoxHubDbContext : DbContext
 
     public virtual DbSet<facility_area> facility_areas { get; set; }
 
+    public virtual DbSet<facility_document> facility_documents { get; set; }
+
     public virtual DbSet<host_addon_price> host_addon_prices { get; set; }
 
     public virtual DbSet<host_base_price> host_base_prices { get; set; }
@@ -419,9 +421,9 @@ public partial class BoxHubDbContext : DbContext
             entity.Property(e => e.attempt_count).HasDefaultValue(0);
             entity.Property(e => e.created_at)
                 .HasDefaultValueSql("now()")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.email).HasMaxLength(255);
-            entity.Property(e => e.expire_at).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.expire_at).HasColumnType("timestamp with time zone");
             entity.Property(e => e.is_used).HasDefaultValue(false);
             entity.Property(e => e.otp_code).HasMaxLength(6);
             entity.Property(e => e.purpose)
@@ -502,6 +504,34 @@ public partial class BoxHubDbContext : DbContext
                 .HasForeignKey(d => d.facility_id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("facility_area_facility_id_fkey");
+        });
+
+        modelBuilder.Entity<facility_document>(entity =>
+        {
+            entity.ToTable("facility_documents");
+
+            entity.HasKey(e => e.document_id).HasName("facility_documents_pkey");
+            entity.Property(e => e.document_id).HasDefaultValueSql("gen_random_uuid()");
+
+            entity.HasIndex(e => new { e.facility_id, e.document_status }, "idx_facility_docs_status");
+            entity.HasIndex(e => new { e.facility_id, e.document_type, e.version }, "uq_facility_document_type").IsUnique();
+
+            entity.Property(e => e.attachments).HasColumnType("jsonb");
+
+            entity.Property(e => e.document_status)
+                .HasDefaultValueSql("'PENDING'::character varying")
+                .HasMaxLength(20);
+            entity.Property(e => e.document_type).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(d => d.facility).WithMany(p => p.facility_documents)
+                .HasForeignKey(d => d.facility_id)
+                .HasConstraintName("fk_facility")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.reviewed_by_navigation).WithMany(p => p.facility_documents)
+                .HasForeignKey(d => d.reviewed_by)
+                .HasConstraintName("fk_reviewer");
         });
 
         modelBuilder.Entity<host_addon_price>(entity =>
@@ -644,13 +674,13 @@ public partial class BoxHubDbContext : DbContext
             entity.Property(e => e.draft_id).HasDefaultValueSql("gen_random_uuid()");
             entity.Property(e => e.created_at)
                 .HasDefaultValueSql("now()")
-                .HasColumnType("timestamp without time zone");
+                .HasColumnType("timestamp with time zone");
             entity.Property(e => e.email).HasMaxLength(255);
-            entity.Property(e => e.expire_at).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.expire_at).HasColumnType("timestamp with time zone");
             entity.Property(e => e.is_verified).HasDefaultValue(false);
             entity.Property(e => e.payload).HasColumnType("jsonb");
             entity.Property(e => e.phone).HasMaxLength(20);
-            entity.Property(e => e.updated_at).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.updated_at).HasColumnType("timestamp with time zone");
 
             entity.HasOne(d => d.otp).WithOne(p => p.draft)
                 .HasForeignKey<host_registration_draft>(d => d.otp_id)

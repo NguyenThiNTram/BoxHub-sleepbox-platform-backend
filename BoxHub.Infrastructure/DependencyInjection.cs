@@ -7,6 +7,7 @@ using BoxHub.Infrastructure.BackgroundJobs;
 using BoxHub.Infrastructure.Repositories;
 using BoxHub.Infrastructure.Services;
 using BoxHub.Shared.Helpers.Photos;
+using BoxHub.Shared.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -26,6 +27,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IHostRegistrationRepository, HostRegistrationRepository>();
             services.AddScoped<IFacilityRepository, FacilityRepository>();
+            services.AddScoped<IAmenityRepository, AmenityRepository>();
 
             //SERVICE
 
@@ -37,6 +39,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IHostRegistrationService, HostRegistrationService>();
             services.AddScoped<ICreateHostAccountWorker, CreateHostAccountWorker>();
             services.AddScoped <IFacilityService, FacilityService>();
+            services.AddScoped<IAmenityService, AmenityService>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -46,10 +49,10 @@ namespace BoxHub.Infrastructure
 
             
 
-            // Phải khớp key trong appsettings.json (đang là "CloudSettings", không phải "Cloudinary").
             services.Configure<CloudSettings>(config.GetSection("CloudSettings"));
             services.AddScoped<ICloudinaryService, CloudinaryService>();
-            services.AddHttpClient<IEmailService, EmailService>();
+            services.Configure<MailSettings>(config.GetSection("MailSettings"));
+            services.AddScoped<IEmailService, EmailService>();
 
             return services;
         }

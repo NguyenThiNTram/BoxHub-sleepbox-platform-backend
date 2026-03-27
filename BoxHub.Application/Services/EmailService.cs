@@ -1,53 +1,55 @@
-﻿using BoxHub.Application.Interfaces.Services;
+using BoxHub.Application.Interfaces.Services;
 using BoxHub.Shared.Helpers;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace BoxHub.Application.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly HttpClient _httpClient;
+        private readonly MailSettings _settings;
 
-        public EmailService(HttpClient httpClient, IConfiguration config)
+        public EmailService(IOptions<MailSettings> settings)
         {
-            _httpClient = httpClient;
-            var apiKey = config["Resend:ApiKey"]; // Đọc từ appsettings
-
-            if (string.IsNullOrWhiteSpace(apiKey))
-                throw new InvalidOperationException("RESEND_API_KEY not null.");
-
-            _httpClient.BaseAddress = new Uri("https://api.resend.com/");
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            _settings = settings.Value;
+            if (string.IsNullOrWhiteSpace(_settings.Server) ||
+                _settings.Port <= 0 ||
+                string.IsNullOrWhiteSpace(_settings.UserName) ||
+                string.IsNullOrWhiteSpace(_settings.Password) ||
+                string.IsNullOrWhiteSpace(_settings.SenderEmail))
+            {
+                throw new InvalidOperationException("MailSettings is not configured.");
+            }
         }
 
         public async Task<bool> SendEmailAsync(MailData mailData)
         {
             try
             {
-                var payload = new
+                using var message = new MailMessage
                 {
-                    from = "onboarding@resend.dev", // Nhớ đổi thành domain thật của bạn sau khi verify trên Resend
-                    to = new[] { mailData.EmailToId },
-                    subject = mailData.EmailSubject,
-                    html = mailData.EmailBody
+                    From = new MailAddress(_settings.SenderEmail, _settings.SenderName),
+                    Subject = mailData.EmailSubject,
+                    Body = mailData.EmailBody,
+                    IsBodyHtml = true
+                };
+                message.To.Add(mailData.EmailToId);
+
+                using var client = new SmtpClient(_settings.Server, _settings.Port)
+                {
+                    EnableSsl = _settings.UseSsl,
+                    Credentials = new NetworkCredential(_settings.UserName, _settings.Password)
                 };
 
-                var response = await _httpClient.PostAsJsonAsync("emails", payload);
-                var body = await response.Content.ReadAsStringAsync();
-
-                Console.WriteLine($"[Resend] Status: {response.StatusCode}, Body: {body}");
-                return response.IsSuccessStatusCode;
+                await client.SendMailAsync(message);
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[EmailService] Error: {ex.Message}");
+                Console.WriteLine($"[EmailService:SMTP] Error: {ex.Message}");
                 return false;
             }
         }

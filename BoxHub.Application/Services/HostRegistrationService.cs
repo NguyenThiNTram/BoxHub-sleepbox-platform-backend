@@ -11,7 +11,9 @@ using BoxHub.Infrastructure.Domain.Entities;
 using BoxHub.Shared.Errors;
 using BoxHub.Shared.Helpers;
 using BoxHub.Shared.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace BoxHub.Application.Services;
 
@@ -108,7 +110,7 @@ public sealed class HostRegistrationService : IHostRegistrationService
             payload = HostRegistrationJson.SerializePayload(new HostDraftPayloadModel
             {
                 Email = email,
-                ReviewStatus = "otp_pending"
+                ReviewStatus = "email_verification_pending"
             }),
             is_verified = false,
             expire_at = utcNow.AddDays(30),
@@ -120,7 +122,9 @@ public sealed class HostRegistrationService : IHostRegistrationService
         await _drafts.AddDraftAsync(draft, ct);
         await _uow.SaveChangesAsync(ct);
 
-        await SendOtpEmailAsync(email, otpCode, ct);
+        var sent = await SendOtpEmailAsync(email, otpCode, ct);
+        if (!sent)
+            return Result<RegisterHostDraftResponse>.Failure(ErrorCodes.EmailSendFailed, "Không gửi được email OTP. Vui lòng thử lại sau.", 500);
 
         return Result<RegisterHostDraftResponse>.Success(new RegisterHostDraftResponse
         {
@@ -135,9 +139,20 @@ public sealed class HostRegistrationService : IHostRegistrationService
         var email = NormalizeEmail(request.Email);
         var code = request.OtpCode.Trim();
 
-        var otpMatch = await _drafts.FindValidOtpAsync(email, code, OtpPurpose, DateTime.UtcNow, ct);
+        var utcNow = DateTime.UtcNow;
+        var otpMatch = await _drafts.FindValidOtpAsync(email, code, OtpPurpose, utcNow, ct);
         if (otpMatch == null)
+        {
+            var latestOtp = await _drafts.GetLatestOtpForEmailAsync(email, OtpPurpose, ct);
+            if (latestOtp != null && !latestOtp.is_used && latestOtp.expire_at > utcNow)
+            {
+                latestOtp.attempt_count += 1;
+                await _drafts.UpdateOtpAsync(latestOtp, ct);
+                await _uow.SaveChangesAsync(ct);
+            }
+
             return Result<VerifyOtpResponse>.Failure(ErrorCodes.OtpInvalid, "Mã OTP không đúng hoặc đã hết hạn.", 400);
+        }
 
         var draft = await _drafts.GetDraftByOtpIdAsync(otpMatch.otp_id, track: true, ct);
         if (draft == null)
@@ -150,6 +165,7 @@ public sealed class HostRegistrationService : IHostRegistrationService
         var payload = HostRegistrationJson.DeserializePayload(draft.payload);
         trackedOtp.is_used = true;
         payload.EmailVerifiedAt = DateTime.UtcNow;
+        payload.ReviewStatus = "pending";
         draft.payload = HostRegistrationJson.SerializePayload(payload);
         draft.updated_at = DateTime.UtcNow;
 
@@ -197,7 +213,9 @@ public sealed class HostRegistrationService : IHostRegistrationService
         // Gửi lại đúng mã nếu chưa dùng và chưa hết hạn (không tạo bản ghi mới — không tăng count 5/10p).
         if (!otp.is_used && otp.expire_at > utcNow)
         {
-            await SendOtpEmailAsync(email, otp.otp_code, ct);
+            var sent = await SendOtpEmailAsync(email, otp.otp_code, ct);
+            if (!sent)
+                return Result<SimpleMessageResponse>.Failure(ErrorCodes.EmailSendFailed, "Không gửi được email OTP. Vui lòng thử lại sau.", 500);
             return Result<SimpleMessageResponse>.Success(new SimpleMessageResponse
             {
                 Success = true,
@@ -232,7 +250,9 @@ public sealed class HostRegistrationService : IHostRegistrationService
         await _drafts.UpdateDraftAsync(trackedDraft, ct);
         await _uow.SaveChangesAsync(ct);
 
-        await SendOtpEmailAsync(email, newOtp.otp_code, ct);
+        var sentNew = await SendOtpEmailAsync(email, newOtp.otp_code, ct);
+        if (!sentNew)
+            return Result<SimpleMessageResponse>.Failure(ErrorCodes.EmailSendFailed, "Không gửi được email OTP. Vui lòng thử lại sau.", 500);
         return Result<SimpleMessageResponse>.Success(new SimpleMessageResponse
         {
             Success = true,
@@ -306,6 +326,19 @@ public sealed class HostRegistrationService : IHostRegistrationService
             if (uByName != null && !string.Equals(uByName.email, emailNorm, StringComparison.OrdinalIgnoreCase))
                 return Result<SimpleMessageResponse>.Failure(ErrorCodes.UsernameExists, "Tên đăng nhập đã tồn tại.", 409);
         }
+
+        // Validate định dạng CCCD: chỉ chấp nhận ảnh.
+        if (form.RepresentativeFrontUrl is { Length: > 0 } front && !IsImageFile(front))
+            return Result<SimpleMessageResponse>.Failure(
+                ErrorCodes.ValidationFailed,
+                "Ảnh mặt trước CCCD chỉ chấp nhận định dạng file ảnh (image/*).",
+                400);
+
+        if (form.RepresentativeBackUrl is { Length: > 0 } back && !IsImageFile(back))
+            return Result<SimpleMessageResponse>.Failure(
+                ErrorCodes.ValidationFailed,
+                "Ảnh mặt sau CCCD chỉ chấp nhận định dạng file ảnh (image/*).",
+                400);
 
         var merged = await BuildPayloadFromFormAsync(
             form,
@@ -594,10 +627,10 @@ public sealed class HostRegistrationService : IHostRegistrationService
 
     private static string GenerateOtpCode() => Random.Shared.Next(100000, 1_000_000).ToString();
 
-    private async Task SendOtpEmailAsync(string email, string code, CancellationToken ct)
+    private async Task<bool> SendOtpEmailAsync(string email, string code, CancellationToken ct)
     {
         _ = ct;
-        await _email.SendEmailAsync(new MailData
+        return await _email.SendEmailAsync(new MailData
         {
             EmailToId = email,
             EmailToName = email,
@@ -639,47 +672,28 @@ public sealed class HostRegistrationService : IHostRegistrationService
                 docs.Add(new HostDraftDocumentModel { DocumentType = type, Attachments = urls });
         }
 
-        // --- Raw documents (mỗi loại 1 file trong payload hiện tại) ---
-        if (form.BusinessLicenseFile is { Length: > 0 } bl)
-        {
-            var url = await _cloudinary.UploadDocumentAsync(bl);
-            if (!string.IsNullOrWhiteSpace(url))
-                UpsertDoc("BUSINESS_LICENSE", new List<string> { url });
-        }
-
-        if (form.TaxCertificateFile is { Length: > 0 } tc)
-        {
-            var url = await _cloudinary.UploadDocumentAsync(tc);
-            if (!string.IsNullOrWhiteSpace(url))
-                UpsertDoc("TAX_CERTIFICATE", new List<string> { url });
-        }
-
         if (form.CompanyRegistrationFile is { Length: > 0 } cr)
         {
-            var url = await _cloudinary.UploadDocumentAsync(cr);
+            var url = IsImageFile(cr)
+                ? await _cloudinary.UploadImageAsync(cr)
+                : await _cloudinary.UploadFileAsync(cr);
+
             if (!string.IsNullOrWhiteSpace(url))
                 UpsertDoc("COMPANY_REGISTRATION", new List<string> { url });
-        }
-
-        if (form.PcccFile is { Length: > 0 } pccc)
-        {
-            var url = await _cloudinary.UploadDocumentAsync(pccc);
-            if (!string.IsNullOrWhiteSpace(url))
-                UpsertDoc("PCCC", new List<string> { url });
         }
 
         // --- Images (CCCD mặt trước/mặt sau + brand logo) ---
         var representativeFrontUrl = existingPayload.RepresentativeFrontUrl;
         if (form.RepresentativeFrontUrl is { Length: > 0 })
         {
-            var url = await _cloudinary.UploadFileAsync(form.RepresentativeFrontUrl);
+            var url = await _cloudinary.UploadImageAsync(form.RepresentativeFrontUrl);
             if (!string.IsNullOrWhiteSpace(url))
                 representativeFrontUrl = url;
         }
         var representativeBackUrl = existingPayload.RepresentativeBackUrl;
         if (form.RepresentativeBackUrl is { Length: > 0 })
         {
-            var url = await _cloudinary.UploadFileAsync(form.RepresentativeBackUrl);
+            var url = await _cloudinary.UploadImageAsync(form.RepresentativeBackUrl);
             if (!string.IsNullOrWhiteSpace(url))
                 representativeBackUrl = url;
         }
@@ -687,7 +701,7 @@ public sealed class HostRegistrationService : IHostRegistrationService
         var brandAvatarUrl = existingPayload.BrandAvatarUrl;
         if (form.BrandAvatar is { Length: > 0 })
         {
-            var url = await _cloudinary.UploadFileAsync(form.BrandAvatar);
+            var url = await _cloudinary.UploadImageAsync(form.BrandAvatar);
             if (!string.IsNullOrWhiteSpace(url))
                 brandAvatarUrl = url;
         }
@@ -790,5 +804,22 @@ public sealed class HostRegistrationService : IHostRegistrationService
         }
 
         return $"{template.TrimEnd('/')}?draftId={draftId}&token={escaped}";
+    }
+
+    private static bool IsImageFile(IFormFile file)
+    {
+        if (!string.IsNullOrWhiteSpace(file.ContentType) &&
+            file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var fileName = file.FileName;
+        var ext = Path.GetExtension(fileName);
+        if (string.IsNullOrWhiteSpace(ext))
+            return false;
+
+        ext = ext.ToLowerInvariant();
+        return ext is ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" or ".heic" or ".heif";
     }
 }

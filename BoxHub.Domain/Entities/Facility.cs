@@ -58,4 +58,6 @@ public partial class facility
     //public virtual ICollection<amenity> amenities { get; set; } = new List<amenity>();
 
     public ICollection<facility_amenity> facility_amenities { get; set; }
+
+    public virtual ICollection<facility_document> facility_documents { get; set; } = new List<facility_document>();
 }

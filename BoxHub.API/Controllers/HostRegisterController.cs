@@ -17,15 +17,22 @@ public sealed class HostRegisterController : ControllerBase
         _hostRegistration = hostRegistration;
     }
 
-    /// <summary>POST /api/host/register/draft — tạo draft + gửi OTP.</summary>
-    [HttpPost("draft")]
+    /// <summary>POST /api/host/register/otp — gửi OTP đăng ký Host (JSON body, bước 1).</summary>
+    [HttpPost("send-otp")]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateDraft([FromForm] RegisterHostDraftForm form, CancellationToken ct)
+    public async Task<IActionResult> SendOtp([FromBody] SendHostRegisterOtpRequest request, CancellationToken ct)
     {
+        // Tận dụng lại logic RegisterDraftAsync vì hiện tại chỉ dùng email.
+        var form = new RegisterHostDraftForm
+        {
+            Email = request.Email ?? string.Empty
+        };
+
         var result = await _hostRegistration.RegisterDraftAsync(form, ct);
         if (!result.IsSuccess)
             return ProblemResult(result.ErrorCode, result.ErrorMessage, result.HttpStatus ?? 400);
 
+        // Giữ nguyên response (DraftId + message) cho FE dùng tiếp bước verify OTP.
         return Created(string.Empty, result.Value);
     }
 

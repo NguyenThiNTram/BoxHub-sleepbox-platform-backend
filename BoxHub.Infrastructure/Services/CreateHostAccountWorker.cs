@@ -130,6 +130,61 @@ public sealed class CreateHostAccountWorker : ICreateHostAccountWorker
                 await _users.CreateProfileAsync(profile, ct);
             }
 
+            var repId = payload.RepresentativeIdNumber?.Trim();
+            if (!string.IsNullOrWhiteSpace(repId))
+            {
+                var repNorm = repId.ToUpperInvariant();
+                var duplicate = await _db.host_profiles.AnyAsync(
+                    h => h.representative_id_number != null
+                         && h.representative_id_number.ToUpper() == repNorm
+                         && h.user_id != hostUser.user_id,
+                    ct);
+
+                if (duplicate)
+                {
+                    payload.ReviewStatus = "rejected";
+                    payload.RejectReason = "Số CCCD/CMND đã được sử dụng cho một Host khác.";
+                    payload.ModeratorId = moderatorId;
+                    payload.ModeratorReviewedAt = now;
+
+                    draft.payload = HostRegistrationJson.SerializePayload(payload);
+                    draft.updated_at = now;
+                    _db.host_registration_drafts.Update(draft);
+
+                    await _db.SaveChangesAsync(ct);
+                    await trx.CommitAsync(ct);
+
+                    // Gửi email thông báo sau khi commit (lỗi gửi mail không rollback trạng thái reject).
+                    try
+                    {
+                        var token = _jwt.CreateHostRegistrationToken(
+                            draft.draft_id,
+                            draft.email,
+                            HostRegistrationTokenUses.DraftEdit,
+                            TimeSpan.FromDays(14));
+
+                        var editLink = BuildLink(_config["HostRegistration:EditDraftUrlTemplate"], token);
+                        var body =
+                            $"<p>Hồ sơ đăng ký Host của bạn đã bị từ chối.</p>" +
+                            $"<p>Lý do: {System.Net.WebUtility.HtmlEncode(payload.RejectReason)}</p>" +
+                            $"<p>Vui lòng <a href=\"{editLink}\">chỉnh sửa và gửi lại</a> (liên kết hiệu lực 14 ngày).</p>";
+
+                        await _email.SendEmailAsync(new MailData
+                        {
+                            EmailToId = draft.email,
+                            EmailToName = payload.Username ?? draft.email,
+                            EmailSubject = "BoxHub — Hồ sơ Host cần chỉnh sửa",
+                            EmailBody = body
+                        });
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                    return;
+                }
+            }
+
             // 3) host_profile (upsert theo user_id)
             var hostProfile = await _db.host_profiles
                 .FirstOrDefaultAsync(h => h.user_id == hostUser.user_id, ct);

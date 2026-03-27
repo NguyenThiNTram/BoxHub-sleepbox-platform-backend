@@ -65,4 +65,6 @@ public partial class user
     public virtual ICollection<user_favorite> user_favorites { get; set; } = new List<user_favorite>();
 
     public virtual user_profile? user_profile { get; set; }
+
+    public virtual ICollection<facility_document> facility_documents { get; set; } = new List<facility_document>();
 }
