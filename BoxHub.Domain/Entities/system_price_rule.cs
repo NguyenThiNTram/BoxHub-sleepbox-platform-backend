@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BoxHub.Domain.Enums.Pricings;
+using System;
 using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
@@ -9,7 +10,7 @@ public partial class system_price_rule
 
     public int? priority { get; set; }
 
-    public string pricing_mode { get; set; } = null!;
+    public PricingMode pricing_mode { get; set; }
 
     public int? min_hours { get; set; }
 

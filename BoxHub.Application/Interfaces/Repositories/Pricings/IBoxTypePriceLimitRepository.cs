@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BoxHub.Application.Interfaces.Repositories
+namespace BoxHub.Application.Interfaces.Repositories.Pricings
 {
     public interface IBoxTypePriceLimitRepository
     {

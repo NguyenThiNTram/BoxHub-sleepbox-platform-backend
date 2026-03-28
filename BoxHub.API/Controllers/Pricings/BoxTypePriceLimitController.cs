@@ -1,15 +1,15 @@
 ﻿using BoxHub.Application.DTOs.Requests.Pricings;
-using BoxHub.Application.Interfaces.Services;
+using BoxHub.Application.Interfaces.Services.Pricings;
 using BoxHub.Domain.Enums.Pricings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BoxHub.API.Controllers
+namespace BoxHub.API.Controllers.Pricings
 {
     [ApiController]
     [Route("api/Admin/box-type-price-limits")]
-    [Authorize(Roles = "ADMIN")] // bật khi có auth
+    [Authorize(Roles = "ADMIN")]
     public class BoxTypePriceLimitController : ControllerBase
     {
         private readonly IBoxTypePriceLimitService _service;

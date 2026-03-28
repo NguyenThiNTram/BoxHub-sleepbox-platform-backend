@@ -47,6 +47,26 @@ namespace BoxHub.Application.Mappers
                     opt => opt.MapFrom(src => src.max_price))
                 .ForMember(dest => dest.IsActive,
                     opt => opt.MapFrom(src => src.is_active));
+
+            // ===== RULE =====
+            CreateMap<system_price_rule, PriceRuleSummary>()
+                .ForMember(dest => dest.RuleId, opt => opt.MapFrom(src => src.rule_id));
+
+            CreateMap<system_price_rule, PriceRuleDetail>()
+                .IncludeBase<system_price_rule, PriceRuleSummary>();
+
+            CreateMap<CreatePriceRuleRequest, system_price_rule>();
+            CreateMap<UpdatePriceRuleRequest, system_price_rule>();
+
+            // ===== FACTOR =====
+            CreateMap<pricing_factor, PricingFactor>()
+                .ForMember(dest => dest.FactorId, opt => opt.MapFrom(src => src.factor_id))
+                .ReverseMap();
+
+            // ===== COMBO =====
+            CreateMap<pricing_combo, PricingCombo>()
+                .ForMember(dest => dest.ComboId, opt => opt.MapFrom(src => src.combo_id))
+                .ReverseMap();
         }
     }
 }

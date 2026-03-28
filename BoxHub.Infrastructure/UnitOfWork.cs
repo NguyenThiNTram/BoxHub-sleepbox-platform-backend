@@ -1,7 +1,8 @@
 ﻿using BoxHub.Application.Interfaces;
-using BoxHub.Application.Interfaces.Repositories;
+using BoxHub.Application.Interfaces.Repositories.Pricings;
 using BoxHub.Infrastructure.Data;
 using BoxHub.Infrastructure.Repositories;
+using BoxHub.Infrastructure.Repositories.Pricings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -16,11 +17,11 @@ namespace BoxHub.Infrastructure
     {
         private readonly BoxHubDbContext _db;
         private IDbContextTransaction? _transaction;
-        public IBoxTypePriceLimitRepository BoxTypePriceLimits { get; }
+        //public IBoxTypePriceLimitRepository BoxTypePriceLimits { get; }
         public UnitOfWork(BoxHubDbContext context)
         {
             _db = context;
-            BoxTypePriceLimits = new BoxTypePriceLimitRepository(context);
+            //BoxTypePriceLimits = new BoxTypePriceLimitRepository(context);
         }
 
         public async Task BeginTransactionAsync(CancellationToken ct)

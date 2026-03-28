@@ -1,5 +1,5 @@
 ﻿using BoxHub.Application.DTOs.Responses.Pricings;
-using BoxHub.Application.Interfaces.Repositories;
+using BoxHub.Application.Interfaces.Repositories.Pricings;
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums.Pricings;
 using BoxHub.Infrastructure.Data;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BoxHub.Infrastructure.Repositories
+namespace BoxHub.Infrastructure.Repositories.Pricings
 {
     public class BoxTypePriceLimitRepository : IBoxTypePriceLimitRepository
     {

@@ -8,8 +8,8 @@ namespace BoxHub.Domain.Enums.Pricings
 {
     public enum PricingMode
     {
-        HOURLY,
-        OVERNIGHT,
-        COMBO
+        HOURLY = 1,
+        OVERNIGHT = 2,
+        // có cần COMBO ở đây không?
     }
 }

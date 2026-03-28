@@ -1,4 +1,4 @@
-﻿using BoxHub.Application.Interfaces.Repositories;
+﻿using BoxHub.Application.Interfaces.Repositories.Pricings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace BoxHub.Application.Interfaces
         Task BeginTransactionAsync(CancellationToken ct);
         Task CommitAsync(CancellationToken ct);
         Task RollbackAsync(CancellationToken ct);
-        IBoxTypePriceLimitRepository BoxTypePriceLimits { get; }
+        //IBoxTypePriceLimitRepository BoxTypePriceLimits { get; }
         Task SaveChangesAsync(CancellationToken ct);
     }
 }

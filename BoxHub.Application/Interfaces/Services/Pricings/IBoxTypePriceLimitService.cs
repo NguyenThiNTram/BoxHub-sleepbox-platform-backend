@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BoxHub.Application.Interfaces.Services
+namespace BoxHub.Application.Interfaces.Services.Pricings
 {
     public interface IBoxTypePriceLimitService
     {
