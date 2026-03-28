@@ -13,11 +13,13 @@ public sealed class BrandService : IBrandService
 {
     private readonly IBrandRepository _repo;
     private readonly IUnitOfWork _uow;
+    private readonly ICloudinaryService _cloudinary;
 
-    public BrandService(IBrandRepository repo, IUnitOfWork uow)
+    public BrandService(IBrandRepository repo, IUnitOfWork uow, ICloudinaryService cloudinary)
     {
         _repo = repo;
         _uow = uow;
+        _cloudinary = cloudinary;
     }
 
     public async Task<Result<BrandResponse>> UpdateBrandAsync(
@@ -25,11 +27,12 @@ public sealed class BrandService : IBrandService
         BrandRequest request,
         CancellationToken ct)
     {
-        if (request.BrandName is null && request.BrandAvatar is null)
+        var hasAvatarUpload = request.BrandAvatar is { Length: > 0 };
+        if (request.BrandName is null && !hasAvatarUpload)
         {
             return Result<BrandResponse>.Failure(
                 ErrorCodes.ValidationFailed,
-                "Cần gửi ít nhất tên thương hiệu hoặc logo để cập nhật.",
+                "Cần gửi ít nhất tên thương hiệu hoặc ảnh logo để cập nhật.",
                 400);
         }
 
@@ -79,10 +82,11 @@ public sealed class BrandService : IBrandService
             entity.brand_name = name;
         }
 
-        if (request.BrandAvatar is not null)
+        if (hasAvatarUpload)
         {
-            var v = request.BrandAvatar.Trim();
-            entity.brand_avatar = string.IsNullOrEmpty(v) ? null : v;
+            var url = await _cloudinary.UploadImageAsync(request.BrandAvatar!);
+            if (!string.IsNullOrWhiteSpace(url))
+                entity.brand_avatar = url;
         }
 
         entity.updated_at = DateTime.UtcNow;
