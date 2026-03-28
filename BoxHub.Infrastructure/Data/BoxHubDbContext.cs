@@ -121,7 +121,7 @@ public partial class BoxHubDbContext : DbContext
             .HasPostgresExtension("btree_gist")
             .HasPostgresExtension("vault", "supabase_vault");
 
-        
+
 
         modelBuilder.Entity<addon_service>(entity =>
         {
@@ -305,17 +305,24 @@ public partial class BoxHubDbContext : DbContext
         {
             entity.HasKey(e => e.brand_id).HasName("brands_pkey");
 
-            entity.HasIndex(e => e.host_id, "idx_brands_host");
-
-            entity.HasIndex(e => new { e.host_id, e.brand_name }, "ux_host_brand_name").IsUnique();
-
+            entity.HasIndex(e => e.host_id, "uq_active_brands_host_id").IsUnique()
+                .HasFilter("is_deleted = false");
+            entity.HasIndex(e => e.brand_name, "uq_active_brands_brand_name").IsUnique()
+                .HasFilter("is_deleted = false");
             entity.Property(e => e.brand_id).HasDefaultValueSql("gen_random_uuid()");
             entity.Property(e => e.brand_avatar).HasColumnType("character varying");
             entity.Property(e => e.brand_name).HasColumnType("character varying");
+            entity.Property(e => e.created_at).HasDefaultValueSql("now()");
             entity.Property(e => e.updated_at).HasDefaultValueSql("now()");
 
-            entity.HasOne(d => d.host).WithMany(p => p.brands)
-                .HasForeignKey(d => d.host_id)
+            entity.Property(e => e.is_deleted).HasDefaultValue(false);
+            entity.Property(e => e.status).HasDefaultValueSql("'PENDING'::character varying")
+                .HasConversion(
+                    v => v.ToString().ToUpperInvariant(),
+                    v => Enum.Parse<BrandStatus>(v, true));
+
+            entity.HasOne(d => d.host).WithOne(p => p.brand)
+                .HasForeignKey<brand>(d => d.host_id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("brands_host_id_fkey");
         });

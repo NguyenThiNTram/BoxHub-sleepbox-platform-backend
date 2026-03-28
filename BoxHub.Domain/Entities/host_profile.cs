@@ -43,7 +43,7 @@ public partial class host_profile
 
     public virtual ICollection<booking> bookings { get; set; } = new List<booking>();
 
-    public virtual ICollection<brand> brands { get; set; } = new List<brand>();
+    public virtual brand? brand { get; set; }
 
     public virtual ICollection<conversation> conversations { get; set; } = new List<conversation>();
 

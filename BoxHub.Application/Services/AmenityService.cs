@@ -46,7 +46,7 @@ public sealed class AmenityService : IAmenityService
         return Result<AmenityResponse>.Success(Map(a));
     }
 
-    public async Task<Result<AmenityResponse>> CreateAsync(CreateAmenityRequest request, CancellationToken ct)
+    public async Task<Result<AmenityResponse>> CreateAsync(AmenityRequest request, CancellationToken ct)
     {
         var name = (request.Name ?? "").Trim();
         if (string.IsNullOrWhiteSpace(name))
@@ -70,7 +70,7 @@ public sealed class AmenityService : IAmenityService
         return Result<AmenityResponse>.Success(Map(entity));
     }
 
-    public async Task<Result<AmenityResponse>> UpdateAsync(int id, UpdateAmenityRequest request, CancellationToken ct)
+    public async Task<Result<AmenityResponse>> UpdateAsync(int id, AmenityRequest request, CancellationToken ct)
     {
         if (id <= 0)
             return Result<AmenityResponse>.Failure(ErrorCodes.ValidationFailed, "amenityId không hợp lệ.", 400);

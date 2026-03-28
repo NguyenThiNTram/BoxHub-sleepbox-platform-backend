@@ -39,7 +39,7 @@ public sealed class AmenityController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateAmenityRequest request, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] AmenityRequest request, CancellationToken ct)
     {
         var result = await _svc.CreateAsync(request, ct);
         if (!result.IsSuccess)
@@ -49,7 +49,7 @@ public sealed class AmenityController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateAmenityRequest request, CancellationToken ct)
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] AmenityRequest request, CancellationToken ct)
     {
         var result = await _svc.UpdateAsync(id, request, ct);
         if (!result.IsSuccess)

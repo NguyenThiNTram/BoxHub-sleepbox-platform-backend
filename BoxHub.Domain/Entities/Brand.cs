@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BoxHub.Domain.Enums;
+using System;
 using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
@@ -13,7 +14,15 @@ public partial class brand
 
     public string? brand_avatar { get; set; }
 
+    public DateTime? created_at { get; set; } = DateTime.UtcNow;
+
     public DateTime? updated_at { get; set; }
+
+    public BrandStatus status { get; set; } = BrandStatus.Pending;
+
+    public bool is_deleted { get; set; } = false;
+
+    public DateTime? deleted_at { get; set; }
 
     public virtual ICollection<facility> facilities { get; set; } = new List<facility>();
 

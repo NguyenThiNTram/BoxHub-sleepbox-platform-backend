@@ -28,6 +28,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IHostRegistrationRepository, HostRegistrationRepository>();
             services.AddScoped<IFacilityRepository, FacilityRepository>();
             services.AddScoped<IAmenityRepository, AmenityRepository>();
+            services.AddScoped<IBrandRepository, BrandRepository>();
 
             //SERVICE
 
@@ -40,6 +41,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<ICreateHostAccountWorker, CreateHostAccountWorker>();
             services.AddScoped <IFacilityService, FacilityService>();
             services.AddScoped<IAmenityService, AmenityService>();
+            services.AddScoped<IBrandService, BrandService>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
