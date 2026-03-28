@@ -350,6 +350,55 @@ public sealed class HostRegistrationService : IHostRegistrationService
             lastName,
             ct);
 
+        if (string.IsNullOrWhiteSpace(merged.BrandName))
+        {
+            return Result<SimpleMessageResponse>.Failure(
+                ErrorCodes.ValidationFailed,
+                "Tên thương hiệu là bắt buộc.",
+                400);
+        }
+
+        if (string.IsNullOrWhiteSpace(merged.BrandAvatarUrl))
+        {
+            return Result<SimpleMessageResponse>.Failure(
+                ErrorCodes.ValidationFailed,
+                "Logo thương hiệu là bắt buộc.",
+                400);
+        }
+
+        if (!string.IsNullOrWhiteSpace(merged.RepresentativeIdNumber))
+        {
+            var repNorm = merged.RepresentativeIdNumber.Trim().ToUpperInvariant();
+            if (await _drafts.RepresentativeIdNumberTakenAsync(repNorm, ct))
+            {
+                return Result<SimpleMessageResponse>.Failure(
+                    ErrorCodes.ValidationFailed,
+                    "Số CCCD/CMND đã được sử dụng cho tài khoản Host khác.",
+                    409);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(merged.TaxCode))
+        {
+            var taxNorm = merged.TaxCode.Trim().ToUpperInvariant();
+            if (await _drafts.TaxCodeTakenAsync(taxNorm, ct))
+            {
+                return Result<SimpleMessageResponse>.Failure(
+                    ErrorCodes.ValidationFailed,
+                    "Mã số thuế đã được sử dụng.",
+                    409);
+            }
+        }
+
+        var brandNorm = merged.BrandName.Trim().ToUpperInvariant();
+        if (await _drafts.BrandNameTakenAsync(brandNorm, ct))
+        {
+            return Result<SimpleMessageResponse>.Failure(
+                ErrorCodes.ValidationFailed,
+                "Tên thương hiệu đã được sử dụng.",
+                409);
+        }
+
         merged.ReviewStatus = "pending";
         merged.RejectReason = null;
         merged.DocumentReviews = null;
@@ -425,7 +474,6 @@ public sealed class HostRegistrationService : IHostRegistrationService
             AddressDetail = p.AddressDetail,
             PaymentMethod = p.PaymentMethod,
             BankName = p.BankName,
-            BankBranch = p.BankBranch,
             AccountNumber = p.AccountNumber,
             AccountName = p.AccountName,
             Documents = docs,
@@ -745,10 +793,9 @@ public sealed class HostRegistrationService : IHostRegistrationService
 
             PaymentMethod = !string.IsNullOrWhiteSpace(form.PaymentMethod)
                 ? form.PaymentMethod.Trim()
-                : (form.IsPaymentAtBase == true ? "PAY_AT_BASE" : "BANK_TRANSFER"),
+                : existingPayload.PaymentMethod,
 
             BankName = !string.IsNullOrWhiteSpace(form.BankName) ? form.BankName.Trim() : existingPayload.BankName,
-            BankBranch = !string.IsNullOrWhiteSpace(form.BankBranch) ? form.BankBranch.Trim() : existingPayload.BankBranch,
             AccountNumber = !string.IsNullOrWhiteSpace(form.AccountNumber) ? form.AccountNumber.Trim() : existingPayload.AccountNumber,
             AccountName = !string.IsNullOrWhiteSpace(form.AccountName) ? form.AccountName.Trim() : existingPayload.AccountName,
 

@@ -130,61 +130,6 @@ public sealed class CreateHostAccountWorker : ICreateHostAccountWorker
                 await _users.CreateProfileAsync(profile, ct);
             }
 
-            var repId = payload.RepresentativeIdNumber?.Trim();
-            if (!string.IsNullOrWhiteSpace(repId))
-            {
-                var repNorm = repId.ToUpperInvariant();
-                var duplicate = await _db.host_profiles.AnyAsync(
-                    h => h.representative_id_number != null
-                         && h.representative_id_number.ToUpper() == repNorm
-                         && h.user_id != hostUser.user_id,
-                    ct);
-
-                if (duplicate)
-                {
-                    payload.ReviewStatus = "rejected";
-                    payload.RejectReason = "Số CCCD/CMND đã được sử dụng cho một Host khác.";
-                    payload.ModeratorId = moderatorId;
-                    payload.ModeratorReviewedAt = now;
-
-                    draft.payload = HostRegistrationJson.SerializePayload(payload);
-                    draft.updated_at = now;
-                    _db.host_registration_drafts.Update(draft);
-
-                    await _db.SaveChangesAsync(ct);
-                    await trx.CommitAsync(ct);
-
-                    // Gửi email thông báo sau khi commit (lỗi gửi mail không rollback trạng thái reject).
-                    try
-                    {
-                        var token = _jwt.CreateHostRegistrationToken(
-                            draft.draft_id,
-                            draft.email,
-                            HostRegistrationTokenUses.DraftEdit,
-                            TimeSpan.FromDays(14));
-
-                        var editLink = BuildLink(_config["HostRegistration:EditDraftUrlTemplate"], token);
-                        var body =
-                            $"<p>Hồ sơ đăng ký Host của bạn đã bị từ chối.</p>" +
-                            $"<p>Lý do: {System.Net.WebUtility.HtmlEncode(payload.RejectReason)}</p>" +
-                            $"<p>Vui lòng <a href=\"{editLink}\">chỉnh sửa và gửi lại</a> (liên kết hiệu lực 14 ngày).</p>";
-
-                        await _email.SendEmailAsync(new MailData
-                        {
-                            EmailToId = draft.email,
-                            EmailToName = payload.Username ?? draft.email,
-                            EmailSubject = "BoxHub — Hồ sơ Host cần chỉnh sửa",
-                            EmailBody = body
-                        });
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                    return;
-                }
-            }
-
             // 3) host_profile (upsert theo user_id)
             var hostProfile = await _db.host_profiles
                 .FirstOrDefaultAsync(h => h.user_id == hostUser.user_id, ct);
@@ -281,32 +226,35 @@ public sealed class CreateHostAccountWorker : ICreateHostAccountWorker
                 }
             }
 
-            // 4) Brand (upsert theo host_id + brand_name)
-            if (!string.IsNullOrWhiteSpace(payload.BrandName))
-            {
-                var brandNameNorm = payload.BrandName.Trim().ToUpperInvariant();
-                var existingBrand = await _db.brands
-                    .FirstOrDefaultAsync(b => b.host_id == hostProfile.host_id
-                                              && b.brand_name.ToUpper() == brandNameNorm, ct);
+            // 4) Brand (một brand / host — bắt buộc brand_name + brand_avatar; Active khi tạo duyệt)
+            var brandNameTrim = payload.BrandName?.Trim();
+            if (string.IsNullOrWhiteSpace(brandNameTrim) || string.IsNullOrWhiteSpace(payload.BrandAvatarUrl))
+                throw new InvalidOperationException("Payload thiếu brand_name hoặc brand_avatar (đã được kiểm tra ở bước cập nhật draft).");
 
-                if (existingBrand == null)
+            var existingBrand = await _db.brands
+                .FirstOrDefaultAsync(b => b.host_id == hostProfile.host_id && !b.is_deleted, ct);
+
+            if (existingBrand == null)
+            {
+                await _db.brands.AddAsync(new brand
                 {
-                    var brand = new brand
-                    {
-                        brand_id = Guid.NewGuid(),
-                        host_id = hostProfile.host_id,
-                        brand_name = payload.BrandName.Trim(),
-                        brand_avatar = payload.BrandAvatarUrl,
-                        updated_at = now
-                    };
-                    await _db.brands.AddAsync(brand, ct);
-                }
-                else
-                {
-                    existingBrand.brand_avatar = payload.BrandAvatarUrl;
-                    existingBrand.updated_at = now;
-                    _db.brands.Update(existingBrand);
-                }
+                    brand_id = Guid.NewGuid(),
+                    host_id = hostProfile.host_id,
+                    brand_name = brandNameTrim,
+                    brand_avatar = payload.BrandAvatarUrl,
+                    status = BrandStatus.Active,
+                    created_at = now,
+                    updated_at = now,
+                    is_deleted = false
+                }, ct);
+            }
+            else
+            {
+                existingBrand.brand_name = brandNameTrim;
+                existingBrand.brand_avatar = payload.BrandAvatarUrl;
+                existingBrand.status = BrandStatus.Active;
+                existingBrand.updated_at = now;
+                _db.brands.Update(existingBrand);
             }
 
             // 5) Payout account (upsert theo host_id + is_primary=true)
@@ -326,7 +274,6 @@ public sealed class CreateHostAccountWorker : ICreateHostAccountWorker
                         account_name = payload.AccountName,
                         account_number = payload.AccountNumber,
                         bank_name = payload.BankName,
-                        bank_branch = payload.BankBranch,
                         is_primary = true,
                         created_at = now
                     };
@@ -338,7 +285,6 @@ public sealed class CreateHostAccountWorker : ICreateHostAccountWorker
                     payout.account_name = payload.AccountName;
                     payout.account_number = payload.AccountNumber;
                     payout.bank_name = payload.BankName;
-                    payout.bank_branch = payload.BankBranch;
                     payout.is_primary = true;
                     _db.host_payout_accounts.Update(payout);
                 }

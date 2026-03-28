@@ -52,9 +52,6 @@ public sealed class RegisterHostDraftFormValidator : AbstractValidator<RegisterH
         RuleFor(x => x.BankName).MaximumLength(150)
             .When(x => !string.IsNullOrWhiteSpace(x.BankName));
 
-        RuleFor(x => x.BankBranch).MaximumLength(150)
-            .When(x => !string.IsNullOrWhiteSpace(x.BankBranch));
-
         RuleFor(x => x.AccountNumber).MaximumLength(50)
             .When(x => !string.IsNullOrWhiteSpace(x.AccountNumber));
 

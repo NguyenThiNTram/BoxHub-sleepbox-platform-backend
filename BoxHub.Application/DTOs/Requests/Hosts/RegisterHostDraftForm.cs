@@ -65,17 +65,11 @@ public sealed class RegisterHostDraftForm
     [FromForm(Name = "bank_name")]
     public string? BankName { get; set; }
 
-    [FromForm(Name = "bank_branch")]
-    public string? BankBranch { get; set; }
-
     [FromForm(Name = "account_number")]
     public string? AccountNumber { get; set; }
 
     [FromForm(Name = "account_name")]
     public string? AccountName { get; set; }
-
-    [FromForm(Name = "is_payment_at_base")]
-    public bool? IsPaymentAtBase { get; set; }
 
     [FromForm(Name = "payment_method")]
     public string? PaymentMethod { get; set; }

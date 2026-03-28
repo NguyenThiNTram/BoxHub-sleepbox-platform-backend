@@ -17,8 +17,6 @@ public partial class host_payout_account
 
     public string? bank_name { get; set; }
 
-    public string? bank_branch { get; set; }
-
     public bool? is_primary { get; set; }
 
     public DateTime created_at { get; set; }

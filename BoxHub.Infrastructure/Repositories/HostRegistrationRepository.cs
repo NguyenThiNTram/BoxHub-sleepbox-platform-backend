@@ -111,4 +111,29 @@ public sealed class HostRegistrationRepository : IHostRegistrationRepository
             q = q.AsNoTracking();
         return await q.FirstOrDefaultAsync(d => d.otp_id == otpId, ct);
     }
+
+    public Task<bool> RepresentativeIdNumberTakenAsync(string normalizedRepresentativeId, CancellationToken ct)
+    {
+        var rep = normalizedRepresentativeId.Trim();
+        return _db.host_profiles.AnyAsync(
+            h => h.representative_id_number != null
+                 && h.representative_id_number.ToUpper() == rep,
+            ct);
+    }
+
+    public Task<bool> TaxCodeTakenAsync(string normalizedTaxCode, CancellationToken ct)
+    {
+        var t = normalizedTaxCode.Trim();
+        return _db.host_profiles.AnyAsync(
+            h => h.tax_code != null && h.tax_code.ToUpper() == t,
+            ct);
+    }
+
+    public Task<bool> BrandNameTakenAsync(string normalizedBrandName, CancellationToken ct)
+    {
+        var n = normalizedBrandName.Trim();
+        return _db.brands.AnyAsync(
+            b => !b.is_deleted && b.brand_name.ToUpper() == n,
+            ct);
+    }
 }
