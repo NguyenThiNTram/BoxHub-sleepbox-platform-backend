@@ -112,15 +112,41 @@ public sealed class JwtService : IJwtService
         {
             var handler = new JwtSecurityTokenHandler();
             var principal = handler.ValidateToken(token, parameters, out var _);
-            var sub = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-            var email = principal.FindFirst(JwtRegisteredClaimNames.Email)?.Value;
+
+            // JwtSecurityTokenHandler mặc định map inbound claims (sub/email -> ClaimTypes.*),
+            // nên cần fallback cả 2 dạng để tránh null.
+            var sub =
+                principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+            var email =
+                principal.FindFirst(ClaimTypes.Email)?.Value
+                ?? principal.FindFirst(JwtRegisteredClaimNames.Email)?.Value;
+
             var tokenUse = principal.FindFirst(TokenUseClaimType)?.Value;
             if (sub == null || email == null || tokenUse == null || !Guid.TryParse(sub, out var subjectId))
                 return null;
             return new HostRegistrationTokenPayload(subjectId, email, tokenUse);
         }
-        catch
+        catch (Exception ex)
         {
+            try
+            {
+                var first50 = string.IsNullOrEmpty(token)
+                    ? string.Empty
+                    : token.Substring(0, Math.Min(50, token.Length));
+
+                Console.WriteLine($"[HostRegistrationToken] Invalid token. token length={token?.Length}");
+                Console.WriteLine($"[HostRegistrationToken] raw token (first 50)={first50}");
+                Console.WriteLine($"[HostRegistrationToken] exception={ex.GetType().FullName}: {ex.Message}");
+                if (ex.InnerException != null)
+                    Console.WriteLine($"[HostRegistrationToken] inner={ex.InnerException.GetType().FullName}: {ex.InnerException.Message}");
+            }
+            catch
+            {
+                // ignore logging errors
+            }
+
             return null;
         }
     }

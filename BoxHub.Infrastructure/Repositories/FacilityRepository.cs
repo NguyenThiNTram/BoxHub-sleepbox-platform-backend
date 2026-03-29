@@ -1,7 +1,8 @@
-﻿using BoxHub.Application.DTOs.Requests.Facilities;
+using BoxHub.Application.DTOs.Requests.Facilities;
 using BoxHub.Application.DTOs.Responses;
 using BoxHub.Application.DTOs.Responses.Facilities;
 using BoxHub.Application.Interfaces.Repositories;
+using BoxHub.Domain.Entities;
 using BoxHub.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -172,6 +173,25 @@ namespace BoxHub.Infrastructure.Repositories
                 request.PageSize
             );
         }
-    
+
+        public async Task<Guid?> GetBrandIdForHostUserAsync(Guid userId, CancellationToken ct)
+        {
+            return await (
+                from h in _db.host_profiles
+                join b in _db.brands on h.host_id equals b.host_id
+                where h.user_id == userId && !b.is_deleted
+                select (Guid?)b.brand_id
+            ).FirstOrDefaultAsync(ct);
+        }
+
+        public async Task AddFacilityAsync(facility entity, CancellationToken ct)
+        {
+            await _db.facilities.AddAsync(entity, ct);
+        }
+
+        public async Task AddFacilityDocumentsAsync(IReadOnlyList<facility_document> documents, CancellationToken ct)
+        {
+            await _db.facility_documents.AddRangeAsync(documents, ct);
+        }
     }
 }

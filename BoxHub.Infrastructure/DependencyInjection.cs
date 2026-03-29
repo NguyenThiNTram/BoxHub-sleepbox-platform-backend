@@ -33,6 +33,8 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IFacilityRepository, FacilityRepository>();
             services.AddScoped<IAmenityRepository, AmenityRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
+            services.AddScoped<IAmenityRepository, AmenityRepository>();
+            services.AddScoped<IBrandRepository, BrandRepository>();
             services.AddScoped<IBoxTypePriceLimitRepository, BoxTypePriceLimitRepository>();
             services.AddScoped<ISystemPriceRuleRepository, SystemPriceRuleRepository>();
             services.AddScoped<IPlatformFeeConfigRepository, PlatformFeeConfigRepository>();
@@ -48,6 +50,8 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IHostRegistrationService, HostRegistrationService>();
             services.AddScoped<ICreateHostAccountWorker, CreateHostAccountWorker>();
             services.AddScoped <IFacilityService, FacilityService>();
+            services.AddScoped<IAmenityService, AmenityService>();
+            services.AddScoped<IBrandService, BrandService>();
             services.AddScoped<IAmenityService, AmenityService>();
             services.AddScoped<IBrandService, BrandService>();
             services.AddScoped<IBoxTypePriceLimitService, BoxTypePriceLimitService>();

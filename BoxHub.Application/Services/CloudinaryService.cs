@@ -26,7 +26,7 @@ namespace BoxHub.Application.Services
             _cloudinary = new Cloudinary(account);
         }
 
-        public async Task<string?> UploadFileAsync(IFormFile file)
+        public async Task<string?> UploadImageAsync(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 throw new Exception("File is invalid.");
@@ -51,12 +51,12 @@ namespace BoxHub.Application.Services
             }
         }
 
-        public async Task<List<string>> UploadFilesAsync(List<IFormFile> files)
+        public async Task<List<string>> UploadImagesAsync(List<IFormFile> files)
         {
             var urls = new List<string>();
             foreach (var file in files)
             {
-                var url = await UploadFileAsync(file);
+                var url = await UploadImageAsync(file);
                 if (url != null)
                 {
                     urls.Add(url);
@@ -65,7 +65,7 @@ namespace BoxHub.Application.Services
             return urls;
         }
 
-        public async Task<string?> UploadDocumentAsync(IFormFile file)
+        public async Task<string?> UploadFileAsync(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 throw new Exception("File is invalid.");
@@ -86,6 +86,22 @@ namespace BoxHub.Application.Services
             {
                 throw new Exception("Failed to upload document to Cloudinary.", ex);
             }
+        }
+
+        public async Task<List<string>> UploadFilesAsync(List<IFormFile> files)
+        {
+            var urls = new List<string>();
+            if (files == null || files.Count == 0)
+                return urls;
+
+            foreach (var file in files)
+            {
+                var url = await UploadFileAsync(file);
+                if (!string.IsNullOrWhiteSpace(url))
+                    urls.Add(url);
+            }
+
+            return urls;
         }
     }
 }

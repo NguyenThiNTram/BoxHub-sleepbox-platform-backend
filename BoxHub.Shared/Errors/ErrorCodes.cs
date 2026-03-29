@@ -21,5 +21,6 @@ namespace BoxHub.Shared.Errors
         public const string DraftLocked = "DRAFT_LOCKED";
         public const string TokenInvalid = "TOKEN_INVALID";
         public const string Forbidden = "FORBIDDEN";
+        public const string EmailSendFailed = "EMAIL_SEND_FAILED";
     }
 }

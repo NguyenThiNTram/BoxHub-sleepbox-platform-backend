@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace BoxHub.Application.DTOs.Requests.Hosts;
 
 /// <summary>multipart/form-data cho đăng ký / cập nhật draft Host (tên field snake_case theo API).</summary>
 public sealed class RegisterHostDraftForm
 {
-    [FromForm(Name = "username")]
-    public string Username { get; set; } = "";
-
     [FromForm(Name = "email")]
     public string Email { get; set; } = "";
+
+    [FromForm(Name = "username")]
+    public string? Username { get; set; }
 
     [FromForm(Name = "phone")]
     public string? Phone { get; set; }
@@ -21,41 +22,55 @@ public sealed class RegisterHostDraftForm
     [FromForm(Name = "last_name")]
     public string? LastName { get; set; }
 
-    [FromForm(Name = "gender")]
-    public string? Gender { get; set; }
-
-    [FromForm(Name = "date_of_birth")]
-    public DateOnly? DateOfBirth { get; set; }
-
-    [FromForm(Name = "representative_name")]
-    public string? RepresentativeName { get; set; }
+    // --- Host profile  ---
+    [FromForm(Name = "representative_id_name")]
+    public string? RepresentativeIdName { get; set; }
 
     [FromForm(Name = "representative_id_number")]
     public string? RepresentativeIdNumber { get; set; }
 
+    [FromForm(Name = "representative_front_url")]
+    public IFormFile? RepresentativeFrontUrl { get; set; }
+
+    [FromForm(Name = "representative_back_url")]
+    public IFormFile? RepresentativeBackUrl { get; set; }
+
     [FromForm(Name = "tax_code")]
     public string? TaxCode { get; set; }
 
-    [FromForm(Name = "business_address")]
-    public string? BusinessAddress { get; set; }
+    // --- Brand & business info ---
+    [FromForm(Name = "brand_name")]
+    public string? BrandName { get; set; }
 
-    /// <summary>Giấy phép kinh doanh — document_type: BUSINESS_LICENSE</summary>
-    [FromForm(Name = "business_license")]
-    public IFormFile? BusinessLicense { get; set; }
+    [FromForm(Name = "brand_avatar")]
+    public IFormFile? BrandAvatar { get; set; }
 
-    /// <summary>Giấy chứng nhận thuế — TAX_CERTIFICATE</summary>
-    [FromForm(Name = "tax_certificate")]
-    public IFormFile? TaxCertificate { get; set; }
+    [FromForm(Name = "business_name")]
+    public string? BusinessName { get; set; }
 
-    /// <summary>CCCD / CMND — IDENTITY_CARD</summary>
-    [FromForm(Name = "identity_card")]
-    public IFormFile? IdentityCard { get; set; }
+    // --- Address ---
+    [FromForm(Name = "address_district")]
+    public string? AddressDistrict { get; set; }
 
-    /// <summary>Đăng ký doanh nghiệp — COMPANY_REGISTRATION</summary>
+    [FromForm(Name = "address_ward")]
+    public string? AddressWard { get; set; }
+
+    [FromForm(Name = "address_detail")]
+    public string? AddressDetail { get; set; }
+
     [FromForm(Name = "company_registration")]
-    public IFormFile? CompanyRegistration { get; set; }
+    public IFormFile? CompanyRegistrationFile { get; set; }
 
-    /// <summary>PCCC — PCCC</summary>
-    [FromForm(Name = "pccc")]
-    public IFormFile? Pccc { get; set; }
+    // --- Payout / bank account ---
+    [FromForm(Name = "bank_name")]
+    public string? BankName { get; set; }
+
+    [FromForm(Name = "account_number")]
+    public string? AccountNumber { get; set; }
+
+    [FromForm(Name = "account_name")]
+    public string? AccountName { get; set; }
+
+    [FromForm(Name = "payment_method")]
+    public string? PaymentMethod { get; set; }
 }

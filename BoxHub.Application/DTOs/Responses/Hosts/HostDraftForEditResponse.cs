@@ -9,13 +9,30 @@ public sealed class HostDraftForEditResponse
     public string? Phone { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
-    public string? Gender { get; set; }
-    /// <summary>yyyy-MM-dd nếu có.</summary>
-    public string? DateOfBirth { get; set; }
-    public string? RepresentativeName { get; set; }
+
+    // host_profile
+    public string? RepresentativeIdName { get; set; }
     public string? RepresentativeIdNumber { get; set; }
+    public string? RepresentativeFrontUrl { get; set; }
+    public string? RepresentativeBackUrl { get; set; }
     public string? TaxCode { get; set; }
-    public string? BusinessAddress { get; set; }
+
+    // brand & business
+    public string? BrandName { get; set; }
+    public string? BrandAvatarUrl { get; set; }
+    public string? BusinessName { get; set; }
+
+    // Address
+    public string? AddressDistrict { get; set; }
+    public string? AddressWard { get; set; }
+    public string? AddressDetail { get; set; }
+
+    // payout
+    public string? PaymentMethod { get; set; }
+    public string? BankName { get; set; }
+    public string? AccountNumber { get; set; }
+    public string? AccountName { get; set; }
+
     public List<HostDraftDocumentItemResponse> Documents { get; set; } = new();
     public string ReviewStatus { get; set; } = "";
     public DateTime? EmailVerifiedAt { get; set; }

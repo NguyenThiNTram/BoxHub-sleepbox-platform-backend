@@ -34,4 +34,13 @@ public interface IHostRegistrationRepository
     Task<email_otp?> GetOtpByIdAsync(Guid otpId, bool track, CancellationToken ct);
 
     Task<host_registration_draft?> GetDraftByOtpIdAsync(Guid otpId, bool track, CancellationToken ct);
+
+    /// <summary>Đã có host_profile khác dùng số CCCD/CMND này (chuẩn hóa UPPER, trim).</summary>
+    Task<bool> RepresentativeIdNumberTakenAsync(string normalizedRepresentativeId, CancellationToken ct);
+
+    /// <summary>Đã có host_profile khác dùng mã số thuế này (chuẩn hóa UPPER, trim).</summary>
+    Task<bool> TaxCodeTakenAsync(string normalizedTaxCode, CancellationToken ct);
+
+    /// <summary>Đã có brand đang hoạt động trùng tên (chuẩn hóa UPPER, trim).</summary>
+    Task<bool> BrandNameTakenAsync(string normalizedBrandName, CancellationToken ct);
 }
