@@ -129,6 +129,38 @@ namespace BoxHub.Application.Mappers
                 // computed
                 .ForMember(dest => dest.TargetHostName,
                     opt => opt.Ignore());
+
+            // ===== ADDON SERVICE =====
+
+            CreateMap<addon_service, AddonService>()
+                .ForMember(dest => dest.ServiceId,
+                    opt => opt.MapFrom(src => src.service_id))
+                .ForMember(dest => dest.ServiceName,
+                    opt => opt.MapFrom(src => src.service_name))
+                .ForMember(dest => dest.Unit,
+                    opt => opt.MapFrom(src => src.unit))
+                .ForMember(dest => dest.Description,
+                    opt => opt.MapFrom(src => src.description))
+                .ForMember(dest => dest.IsActive,
+                    opt => opt.MapFrom(src => src.is_active));
+
+            CreateMap<CreateAddonServiceRequest, addon_service>()
+                .ForMember(dest => dest.service_id,
+                    opt => opt.Ignore())
+                .ForMember(dest => dest.service_name,
+                    opt => opt.MapFrom(src => src.ServiceName))
+                .ForMember(dest => dest.unit,
+                    opt => opt.MapFrom(src => src.Unit))
+                .ForMember(dest => dest.description,
+                    opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.is_active,
+                    opt => opt.Ignore())
+                .ForMember(dest => dest.created_at,
+                    opt => opt.Ignore());
+
+
+            CreateMap<UpdateAddonServiceRequest, addon_service>()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

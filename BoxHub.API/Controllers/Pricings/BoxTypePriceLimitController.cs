@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BoxHub.API.Controllers.Pricings
 {
     [ApiController]
-    [Route("api/Admin/box-type-price-limits")]
+    [Route("api/admin/pricing/box-type-price-limits")]
     [Authorize(Roles = "ADMIN")]
     public class BoxTypePriceLimitController : ControllerBase
     {

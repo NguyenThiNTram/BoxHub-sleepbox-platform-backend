@@ -20,36 +20,14 @@ namespace BoxHub.Application.Interfaces.Repositories.Pricings
 
         Task<List<platform_fee_config>> GetCurrentConfigsAsync(DateTime now, CancellationToken ct);
 
-        Task<List<platform_fee_config>> GetActiveConfigsAtAsync(
-            DateTime atTime,
-            Guid? hostId,
-            CancellationToken ct
-        );
+        Task<List<platform_fee_config>> GetActiveConfigsAtAsync(DateTime atTime, Guid? hostId, CancellationToken ct);
 
-        Task<platform_fee_config?> ResolveConfigAsync(
-            FeeCode feeCode,
-            Guid hostId,
-            DateTime atTime,
-            CancellationToken ct
-        );
+        Task<platform_fee_config?> ResolveConfigAsync(FeeCode feeCode, Guid hostId, DateTime atTime, CancellationToken ct);
 
-        Task<List<platform_fee_config>> GetHistoryByFeeCodeAsync(
-            FeeCode feeCode,
-            Guid? hostId,
-            CancellationToken ct
-        );
+        Task<List<platform_fee_config>> GetHistoryByFeeCodeAsync(FeeCode feeCode, Guid? hostId, CancellationToken ct);
 
-        Task<bool> HasOverlapAsync(
-            FeeCode feeCode,
-            DateTime effectiveFrom,
-            Guid? hostId,
-            CancellationToken ct
-        );
+        Task<bool> HasOverlapAsync(FeeCode feeCode, DateTime effectiveFrom, Guid? hostId, CancellationToken ct);
 
-        Task<List<platform_fee_config>> ResolveAllConfigsAsync(
-            Guid hostId,
-            DateTime atTime,
-            CancellationToken ct
-        );
+        Task<List<platform_fee_config>> ResolveAllConfigsAsync(Guid hostId, DateTime atTime, CancellationToken ct);
     }
 }

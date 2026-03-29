@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BoxHub.API.Controllers.Pricings
 {
     [ApiController]
-    [Route("api/Admin/system-price-rules")]
+    [Route("api/admin/pricing/system-price-rules")]
     [Authorize(Roles = "ADMIN")]
     public class SystemPriceRuleController : ControllerBase
     {

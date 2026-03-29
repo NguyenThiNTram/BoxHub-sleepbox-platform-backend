@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BoxHub.API.Controllers.Pricings
 {
-    [Route("api/Admin/Platform-fee-config")]
+    [Route("api/admin/pricing/platform-fee-config")]
     [ApiController]
     [Authorize(Roles = "ADMIN")]
     public class PlatformFeeConfigController : ControllerBase

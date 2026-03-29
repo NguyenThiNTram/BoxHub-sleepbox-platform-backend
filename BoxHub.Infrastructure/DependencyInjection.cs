@@ -33,6 +33,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IBoxTypePriceLimitRepository, BoxTypePriceLimitRepository>();
             services.AddScoped<ISystemPriceRuleRepository, SystemPriceRuleRepository>();
             services.AddScoped<IPlatformFeeConfigRepository, PlatformFeeConfigRepository>();
+            services.AddScoped<IAddonServiceRepository, AddonServiceRepository>();
 
             //SERVICE
 
@@ -47,6 +48,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IBoxTypePriceLimitService, BoxTypePriceLimitService>();
             services.AddScoped<ISystemPriceRuleService, SystemPriceRuleService>();
             services.AddScoped<IPlatformFeeConfigService, PlatformFeeConfigService>();
+            services.AddScoped<IAddonServiceService, AddonServiceService>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
