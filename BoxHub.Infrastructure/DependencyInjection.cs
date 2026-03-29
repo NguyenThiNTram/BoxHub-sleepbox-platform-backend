@@ -11,6 +11,7 @@ using BoxHub.Infrastructure.Repositories;
 using BoxHub.Infrastructure.Repositories.Pricings;
 using BoxHub.Infrastructure.Services;
 using BoxHub.Shared.Helpers.Photos;
+using BoxHub.Shared.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -30,6 +31,8 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IHostRegistrationRepository, HostRegistrationRepository>();
             services.AddScoped<IFacilityRepository, FacilityRepository>();
+            services.AddScoped<IAmenityRepository, AmenityRepository>();
+            services.AddScoped<IBrandRepository, BrandRepository>();
             services.AddScoped<IBoxTypePriceLimitRepository, BoxTypePriceLimitRepository>();
             services.AddScoped<ISystemPriceRuleRepository, SystemPriceRuleRepository>();
             services.AddScoped<IPlatformFeeConfigRepository, PlatformFeeConfigRepository>();
@@ -45,6 +48,8 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IHostRegistrationService, HostRegistrationService>();
             services.AddScoped<ICreateHostAccountWorker, CreateHostAccountWorker>();
             services.AddScoped <IFacilityService, FacilityService>();
+            services.AddScoped<IAmenityService, AmenityService>();
+            services.AddScoped<IBrandService, BrandService>();
             services.AddScoped<IBoxTypePriceLimitService, BoxTypePriceLimitService>();
             services.AddScoped<ISystemPriceRuleService, SystemPriceRuleService>();
             services.AddScoped<IPlatformFeeConfigService, PlatformFeeConfigService>();
@@ -59,10 +64,10 @@ namespace BoxHub.Infrastructure
 
             
 
-            // Phải khớp key trong appsettings.json (đang là "CloudSettings", không phải "Cloudinary").
             services.Configure<CloudSettings>(config.GetSection("CloudSettings"));
             services.AddScoped<ICloudinaryService, CloudinaryService>();
-            services.AddHttpClient<IEmailService, EmailService>();
+            services.Configure<MailSettings>(config.GetSection("MailSettings"));
+            services.AddScoped<IEmailService, EmailService>();
 
             return services;
         }
