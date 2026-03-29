@@ -15,9 +15,7 @@ namespace BoxHub.Application.Mappers
     {
         public PricingProfile()
         {
-            // =========================
-            // CREATE REQUEST → ENTITY
-            // =========================
+            // ===== BOXTYPE =====
             CreateMap<CreateBoxTypePriceLimitRequest, system_box_type_price_limit>()
                 .ForMember(dest => dest.capacity_type,
                     opt => opt.MapFrom(src => src.CapacityType.ToString()))
@@ -30,10 +28,6 @@ namespace BoxHub.Application.Mappers
                 .ForMember(dest => dest.is_active,
                     opt => opt.Ignore()); // set ở service
 
-
-            // =========================
-            // ENTITY → RESPONSE
-            // =========================
             CreateMap<system_box_type_price_limit, BoxTypePriceLimitResponse>()
                 .ForMember(dest => dest.LimitId,
                     opt => opt.MapFrom(src => src.limit_id))
@@ -67,6 +61,74 @@ namespace BoxHub.Application.Mappers
             CreateMap<pricing_combo, PricingCombo>()
                 .ForMember(dest => dest.ComboId, opt => opt.MapFrom(src => src.combo_id))
                 .ReverseMap();
+
+            // ===== PLATFORM FEE =====
+
+            CreateMap<CreatePlatformFeeConfigRequest, platform_fee_config>()
+                .ForMember(dest => dest.fee_code,
+                    opt => opt.MapFrom(src => src.FeeCode.ToString()))
+                .ForMember(dest => dest.fee_name,
+                    opt => opt.MapFrom(src => src.FeeName))
+                .ForMember(dest => dest.fee_type,
+                    opt => opt.MapFrom(src => src.FeeType.HasValue ? src.FeeType.ToString() : null))
+                .ForMember(dest => dest.target_host_id,
+                    opt => opt.MapFrom(src => src.TargetHostId))
+                .ForMember(dest => dest.calculation_method,
+                    opt => opt.MapFrom(src => src.CalculationMethod.ToString()))
+                .ForMember(dest => dest.percentage_value,
+                    opt => opt.MapFrom(src => src.PercentageValue))
+                .ForMember(dest => dest.fixed_amount,
+                    opt => opt.MapFrom(src => src.FixedAmount))
+                .ForMember(dest => dest.applied_base_on,
+                    opt => opt.MapFrom(src => src.AppliedBaseOn.ToString()))
+                .ForMember(dest => dest.calculation_order,
+                    opt => opt.MapFrom(src => src.CalculationOrder))
+                .ForMember(dest => dest.effective_from,
+                    opt => opt.MapFrom(src => src.EffectiveFrom))
+                .ForMember(dest => dest.effective_to,
+                    opt => opt.MapFrom(src => src.EffectiveTo))
+                .ForMember(dest => dest.is_active,
+                    opt => opt.Ignore())
+                .ForMember(dest => dest.created_at,
+                    opt => opt.Ignore());
+
+
+            // ENTITY → RESPONSE
+            CreateMap<platform_fee_config, PlatformFeeConfig>()
+                .ForMember(dest => dest.ConfigId,
+                    opt => opt.MapFrom(src => src.config_id))
+                .ForMember(dest => dest.FeeCode,
+                    opt => opt.MapFrom(src => src.fee_code))
+                .ForMember(dest => dest.FeeName,
+                    opt => opt.MapFrom(src => src.fee_name))
+                .ForMember(dest => dest.FeeType,
+                    opt => opt.MapFrom(src => src.fee_type != null ? src.fee_type : (FeeType?)null))
+                .ForMember(dest => dest.TargetHostId,
+                    opt => opt.MapFrom(src => src.target_host_id))
+                .ForMember(dest => dest.CalculationMethod,
+                    opt => opt.MapFrom(src => src.calculation_method))
+                .ForMember(dest => dest.PercentageValue,
+                    opt => opt.MapFrom(src => src.percentage_value))
+                .ForMember(dest => dest.FixedAmount,
+                    opt => opt.MapFrom(src => src.fixed_amount))
+                .ForMember(dest => dest.AppliedBaseOn,
+                    opt => opt.MapFrom(src => src.applied_base_on))
+                .ForMember(dest => dest.CalculationOrder,
+                    opt => opt.MapFrom(src => src.calculation_order))
+                .ForMember(dest => dest.EffectiveFrom,
+                    opt => opt.MapFrom(src => src.effective_from))
+                .ForMember(dest => dest.EffectiveTo,
+                    opt => opt.MapFrom(src => src.effective_to))
+                .ForMember(dest => dest.IsActive,
+                    opt => opt.MapFrom(src => src.is_active))
+                .ForMember(dest => dest.CreatedAt,
+                    opt => opt.MapFrom(src => src.created_at))
+                .ForMember(dest => dest.Priority,
+                    opt => opt.MapFrom(src => src.priority))
+
+                // computed
+                .ForMember(dest => dest.TargetHostName,
+                    opt => opt.Ignore());
         }
     }
 }

@@ -1,3 +1,4 @@
+using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
 using BoxHub.Infrastructure.Domain.Entities;
 
@@ -5,6 +6,9 @@ namespace BoxHub.Application.Interfaces.Repositories;
 
 public interface IHostRegistrationRepository
 {
+    //get host_profile by host_id, return null if not found
+    Task<host_profile?> GetByIdAsync(Guid hostId, CancellationToken ct);
+    //-----------------------------------------------------------------------------------------------
     Task<host_registration_draft?> GetDraftByIdAsync(Guid draftId, bool track, CancellationToken ct);
 
     Task AddDraftAsync(host_registration_draft draft, CancellationToken ct);

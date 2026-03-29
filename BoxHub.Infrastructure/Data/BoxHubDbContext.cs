@@ -780,7 +780,11 @@ public partial class BoxHubDbContext : DbContext
 
             entity.Property(e => e.config_id).HasDefaultValueSql("gen_random_uuid()");
             entity.Property(e => e.applied_base_on).HasColumnType("character varying");
-            entity.Property(e => e.calculation_method).HasColumnType("character varying");
+
+            entity.Property(e => e.calculation_method)
+                .HasColumnType("character varying")
+                .HasConversion<string>();
+
             entity.Property(e => e.created_at).HasDefaultValueSql("now()");
             entity.Property(e => e.fee_code).HasColumnType("character varying");
             entity.Property(e => e.fee_name).HasColumnType("character varying");
@@ -818,7 +822,9 @@ public partial class BoxHubDbContext : DbContext
             entity.HasIndex(e => e.rule_id, "idx_pricing_factors_rule");
 
             entity.Property(e => e.factor_id).HasDefaultValueSql("gen_random_uuid()");
-            entity.Property(e => e.factor_type).HasColumnType("character varying");
+            entity.Property(e => e.factor_type)
+                .HasColumnType("character varying")
+                .HasConversion<string>();
             entity.Property(e => e.is_active).HasDefaultValue(true);
             entity.Property(e => e.max_factor).HasPrecision(3, 2);
             entity.Property(e => e.min_factor).HasPrecision(3, 2);
@@ -958,7 +964,9 @@ public partial class BoxHubDbContext : DbContext
             entity.Property(e => e.is_active).HasDefaultValue(true);
             entity.Property(e => e.max_price).HasPrecision(12, 2);
             entity.Property(e => e.min_price).HasPrecision(12, 2);
-            entity.Property(e => e.pricing_mode).HasColumnType("character varying");
+            entity.Property(e => e.pricing_mode)
+                .HasColumnType("character varying")
+                .HasConversion<string>();
             entity.Property(e => e.priority).HasDefaultValue(0);
         });
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BoxHub.Domain.Enums.Pricings;
+using System;
 using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
@@ -7,21 +8,21 @@ public partial class platform_fee_config
 {
     public Guid config_id { get; set; }
 
-    public string fee_code { get; set; } = null!;
+    public FeeCode fee_code { get; set; }
 
     public string fee_name { get; set; } = null!;
 
-    public string? fee_type { get; set; }
+    public FeeType? fee_type { get; set; }
 
     public Guid? target_host_id { get; set; }
 
-    public string? calculation_method { get; set; }
+    public CalcMethod calculation_method { get; set; }
 
     public decimal? percentage_value { get; set; }
 
     public decimal? fixed_amount { get; set; }
 
-    public string? applied_base_on { get; set; }
+    public AppliedBaseOn? applied_base_on { get; set; }
 
     public int? priority { get; set; }
 

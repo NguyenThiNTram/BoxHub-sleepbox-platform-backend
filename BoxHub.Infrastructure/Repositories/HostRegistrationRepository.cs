@@ -1,4 +1,5 @@
 using BoxHub.Application.Interfaces.Repositories;
+using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
 using BoxHub.Infrastructure.Data;
 using BoxHub.Infrastructure.Domain.Entities;
@@ -14,6 +15,16 @@ public sealed class HostRegistrationRepository : IHostRegistrationRepository
     {
         _db = db;
     }
+
+    //------------------------------------------------------------------------------------------
+    public async Task<host_profile?> GetByIdAsync(Guid hostId, CancellationToken ct)
+    {
+        return await _db.host_profiles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.host_id == hostId, ct);
+    }
+
+    //------------------------------------------------------------------------------------------
 
     public async Task<host_registration_draft?> GetDraftByIdAsync(Guid draftId, bool track, CancellationToken ct)
     {

@@ -60,6 +60,8 @@ namespace BoxHub.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
+                options.UseInlineDefinitionsForEnums();
+
                 options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
                 {
                     Title = "BoxHub API",
