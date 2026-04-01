@@ -151,16 +151,21 @@ public partial class BoxHubDbContext : DbContext
             entity.HasKey(e => e.audit_id).HasName("audit_logs_pkey");
 
             entity.HasIndex(e => new { e.target_type, e.target_id }, "idx_audit_logs_target");
+            entity.HasIndex(e => e.actor_id, "idx_audit_logs_actor");
 
             entity.Property(e => e.audit_id).HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.actor_id).HasColumnName("actor_id");
             entity.Property(e => e.action).HasColumnType("character varying");
             entity.Property(e => e.actor_role).HasColumnType("character varying");
             entity.Property(e => e.created_at).HasDefaultValueSql("now()");
             entity.Property(e => e.note).HasColumnType("character varying");
             entity.Property(e => e.target_type).HasColumnType("character varying");
+            entity.Property(e => e.old_value).HasColumnType("jsonb");
+            entity.Property(e => e.new_value).HasColumnType("jsonb");
 
             entity.HasOne(d => d.actor).WithMany(p => p.audit_logs)
                 .HasForeignKey(d => d.actor_id)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("audit_logs_actor_id_fkey");
         });
 

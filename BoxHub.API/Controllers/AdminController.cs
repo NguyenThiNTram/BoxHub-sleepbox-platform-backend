@@ -2,6 +2,7 @@
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Shared.Errors;
 using BoxHub.Shared.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -10,6 +11,7 @@ namespace BoxHub.API.Controllers
 {
     [Route("api/Admin")]
     [ApiController]
+    [Authorize(Roles = "ADMIN")]
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;

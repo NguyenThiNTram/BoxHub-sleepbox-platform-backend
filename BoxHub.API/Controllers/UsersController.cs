@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace BoxHub.API.Controllers;
 
 [ApiController]
-[Route("api/auth/guest")]
+[Route("api/auth/")]
 [Authorize]
 public class UsersController : ControllerBase
 {
