@@ -7,9 +7,6 @@ namespace BoxHub.Application.DTOs.Requests.Hosts;
 /// <summary>multipart/form-data cho đăng ký / cập nhật draft Host (tên field snake_case theo API).</summary>
 public sealed class RegisterHostDraftForm
 {
-    [FromForm(Name = "email")]
-    public string Email { get; set; } = "";
-
     [FromForm(Name = "username")]
     public string? Username { get; set; }
 
