@@ -535,11 +535,7 @@ public partial class BoxHubDbContext : DbContext
             entity.Property(e => e.document_status)
                 .HasDefaultValueSql("'PENDING'::character varying")
                 .HasMaxLength(20);
-            entity.Property(e => e.document_type)
-                .HasColumnType("character varying")
-                .HasConversion(
-                    v => v.ToString().ToUpperInvariant(),
-                    v => Enum.Parse<BoxHub.Domain.Enums.FacilityDocumentType>(v, true));
+            entity.Property(e => e.document_type).HasColumnType("character varying");
             entity.Property(e => e.created_at).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasOne(d => d.facility).WithMany(p => p.facility_documents)

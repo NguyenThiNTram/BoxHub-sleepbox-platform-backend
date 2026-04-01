@@ -1,3 +1,4 @@
+using BoxHub.Application.Constants;
 using BoxHub.Application.DTOs.Requests.Facilities;
 using BoxHub.Application.DTOs.Responses;
 using BoxHub.Application.DTOs.Responses.Facilities;
@@ -5,7 +6,6 @@ using BoxHub.Application.Interfaces;
 using BoxHub.Application.Interfaces.Repositories;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
-using BoxHub.Domain.Enums;
 using BoxHub.Shared.Errors;
 using BoxHub.Shared.Results;
 using System.Text.Json;
@@ -110,7 +110,7 @@ public class FacilityService : IFacilityService
             {
                 document_id = Guid.NewGuid(),
                 facility_id = facilityId,
-                document_type = FacilityDocumentType.BusinessLicense,
+                document_type = FacilityDocumentTypes.BusinessLicense,
                 version = 1,
                 attachments = licenseJson,
                 document_status = "PENDING",
@@ -121,7 +121,7 @@ public class FacilityService : IFacilityService
             {
                 document_id = Guid.NewGuid(),
                 facility_id = facilityId,
-                document_type = FacilityDocumentType.PCCC,
+                document_type = FacilityDocumentTypes.Pccc,
                 version = 1,
                 attachments = pcccJson,
                 document_status = "PENDING",

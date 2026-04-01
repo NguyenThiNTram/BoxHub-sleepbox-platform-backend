@@ -1,4 +1,4 @@
-using BoxHub.Application.DTOs.Requests.Otp;
+using BoxHub.Application.DTOs.Requests.Hosts;
 using BoxHub.Application.DTOs.Responses.Hosts;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Shared.Errors;
@@ -7,33 +7,20 @@ using Microsoft.AspNetCore.Mvc;
 namespace BoxHub.API.Controllers;
 
 [ApiController]
-[Route("api/otp")]
+[Route("api")]
 public sealed class OTPController : ControllerBase
 {
-    private readonly IOtpService _otpService;
+    private readonly IHostRegistrationService _svc;
 
-    public OTPController(IOtpService svc)
+    public OTPController(IHostRegistrationService svc)
     {
-        _otpService = svc;
+        _svc = svc;
     }
 
-    [HttpPost("send")]
-    public async Task<IActionResult> Send([FromBody] SendOtpRequest request, CancellationToken ct)
+    [HttpPost("verify-otp")]
+    public async Task<ActionResult<VerifyOtpResponse>> Verify([FromBody] VerifyOtpRequest request, CancellationToken ct)
     {
-        var result = await _otpService.SendAsync(request, ct);
-        if (!result.IsSuccess)
-            return Problem(
-                title: result.ErrorCode ?? ErrorCodes.ValidationFailed,
-                detail: result.ErrorMessage,
-                statusCode: result.HttpStatus ?? 400);
-
-        return StatusCode(StatusCodes.Status201Created, result.Value);
-    }
-
-    [HttpPost("verify")]
-    public async Task<ActionResult<VerifyOtpResponse>> Verify([FromBody] VerifyOtpGenericRequest request, CancellationToken ct)
-    {
-        var result = await _otpService.VerifyAsync(request, ct);
+        var result = await _svc.VerifyOtpAsync(request, ct);
         if (!result.IsSuccess)
             return StatusCode(
                 result.HttpStatus ?? 400,
@@ -42,10 +29,10 @@ public sealed class OTPController : ControllerBase
         return Ok(result.Value);
     }
 
-    [HttpPost("resend")]
-    public async Task<IActionResult> Resend([FromBody] ResendOtpGenericRequest request, CancellationToken ct)
+    [HttpPost("resend-otp")]
+    public async Task<IActionResult> Resend([FromBody] ResendOtpRequest request, CancellationToken ct)
     {
-        var result = await _otpService.ResendAsync(request, ct);
+        var result = await _svc.ResendOtpAsync(request, ct);
         if (!result.IsSuccess)
             return Problem(
                 title: result.ErrorCode ?? ErrorCodes.ValidationFailed,

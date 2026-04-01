@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BoxHub.API.Controllers;
 
+/// <summary>Đăng ký Host — tạo / cập nhật bản nháp (multipart).</summary>
 [ApiController]
 [Route("api/host/register")]
 public sealed class HostRegisterController : ControllerBase
@@ -16,26 +17,37 @@ public sealed class HostRegisterController : ControllerBase
         _hostRegistration = hostRegistration;
     }
 
-    [HttpPost("draft")]
-    [Consumes("multipart/form-data")]
+    /// <summary>POST /api/host/register/otp — gửi OTP đăng ký Host (JSON body, bước 1).</summary>
+    [HttpPost("send-otp")]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateDraft([FromForm] RegisterHostDraftForm form, CancellationToken ct)
+    public async Task<IActionResult> SendOtp([FromBody] SendHostRegisterOtpRequest request, CancellationToken ct)
     {
-        var token = ReadBearerToken();
-        var result = await _hostRegistration.CreateDraftAsync(token, form, ct);
+        // Tận dụng lại logic RegisterDraftAsync vì hiện tại chỉ dùng email.
+        var form = new RegisterHostDraftForm
+        {
+            Email = request.Email ?? string.Empty
+        };
+
+        var result = await _hostRegistration.RegisterDraftAsync(form, ct);
         if (!result.IsSuccess)
             return ProblemResult(result.ErrorCode, result.ErrorMessage, result.HttpStatus ?? 400);
 
+        // Giữ nguyên response (DraftId + message) cho FE dùng tiếp bước verify OTP.
         return Created(string.Empty, result.Value);
     }
 
+    /// <summary>GET /api/host/register/draft/{draftId} — lấy dữ liệu đã lưu để fill form (token query hoặc header).</summary>
     [HttpGet("draft/{draftId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDraftForEdit(
         [FromRoute] Guid draftId,
+        [FromQuery(Name = "token")] string? tokenFromQuery,
         CancellationToken ct)
     {
-        var token = ReadBearerToken();
+        // Ưu tiên token truyền qua query để Swagger UI dễ test.
+        var token = !string.IsNullOrWhiteSpace(tokenFromQuery)
+            ? tokenFromQuery
+            : ReadTokenFromQueryOrHeader();
         var result = await _hostRegistration.GetDraftForEditAsync(draftId, token, ct);
         if (!result.IsSuccess)
             return ProblemResult(result.ErrorCode, result.ErrorMessage, result.HttpStatus ?? 400);
@@ -43,13 +55,17 @@ public sealed class HostRegisterController : ControllerBase
         return Ok(result.Value);
     }
 
+    /// <summary>PUT /api/host/register/draft/{draftId} — token query hoặc header.</summary>
     [HttpPut("draft/{draftId:guid}")]
     public async Task<IActionResult> UpdateDraft(
         [FromRoute] Guid draftId,
         [FromForm] RegisterHostDraftForm form,
+        [FromQuery(Name = "token")] string? tokenFromQuery,
         CancellationToken ct)
     {
-        var token = ReadBearerToken();
+        var token = !string.IsNullOrWhiteSpace(tokenFromQuery)
+            ? tokenFromQuery
+            : ReadTokenFromQueryOrHeader();
         var result = await _hostRegistration.UpdateDraftAsync(draftId, token, form, ct);
         if (!result.IsSuccess)
             return ProblemResult(result.ErrorCode, result.ErrorMessage, result.HttpStatus ?? 400);
@@ -57,12 +73,14 @@ public sealed class HostRegisterController : ControllerBase
         return Ok(result.Value);
     }
 
-    private string? ReadBearerToken()
+    private string? ReadTokenFromQueryOrHeader()
     {
+        // Swagger "Authorize" thường truyền Authorization: Bearer <token>
         if (Request.Headers.TryGetValue("Authorization", out var auth)
             && !string.IsNullOrWhiteSpace(auth))
         {
             var value = auth.ToString().Trim();
+            // Hỗ trợ cả "Bearer <token>" và "<token>" (không cần Bearer).
             if (value.StartsWith("Bearer", StringComparison.OrdinalIgnoreCase))
             {
                 var rest = value.Substring("Bearer".Length).Trim();
@@ -71,7 +89,10 @@ public sealed class HostRegisterController : ControllerBase
             }
             return value;
         }
-        return null;
+
+        if (Request.Headers.TryGetValue("token", out var h) && !string.IsNullOrWhiteSpace(h))
+            return h.ToString();
+        return Request.Query["token"].FirstOrDefault();
     }
 
     private static ObjectResult ProblemResult(string? code, string? message, int status) =>

@@ -6,7 +6,11 @@ namespace BoxHub.Application.Interfaces.Services;
 
 public interface IHostRegistrationService
 {
-    Task<Result<RegisterHostDraftResponse>> CreateDraftAsync(string? token, RegisterHostDraftForm form, CancellationToken ct);
+    Task<Result<RegisterHostDraftResponse>> RegisterDraftAsync(RegisterHostDraftForm form, CancellationToken ct);
+
+    Task<Result<VerifyOtpResponse>> VerifyOtpAsync(VerifyOtpRequest request, CancellationToken ct);
+
+    Task<Result<SimpleMessageResponse>> ResendOtpAsync(ResendOtpRequest request, CancellationToken ct);
 
     Task<Result<SimpleMessageResponse>> UpdateDraftAsync(
         Guid draftId,
@@ -14,6 +18,7 @@ public interface IHostRegistrationService
         RegisterHostDraftForm form,
         CancellationToken ct);
 
+    /// <summary>Lấy dữ liệu draft để hiển thị form (cùng điều kiện token như PUT).</summary>
     Task<Result<HostDraftForEditResponse>> GetDraftForEditAsync(Guid draftId, string? token, CancellationToken ct);
 
     Task<Result<SimpleMessageResponse>> SetPasswordAsync(string? token, HostSetPasswordRequest request, CancellationToken ct);

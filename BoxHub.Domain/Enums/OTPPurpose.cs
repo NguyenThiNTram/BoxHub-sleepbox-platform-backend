@@ -11,7 +11,6 @@ namespace BoxHub.Domain.Enums
         VERIFY_EMAIL,
         FORGOT_PASSWORD,
         CHANGE_EMAIL,
-        RESET_PASSWORD,
-        HOST_REGISTER,
+        RESET_PASSWORD
     }
 }
