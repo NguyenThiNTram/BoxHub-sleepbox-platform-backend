@@ -7,8 +7,6 @@ public sealed class RegisterHostDraftFormValidator : AbstractValidator<RegisterH
 {
     public RegisterHostDraftFormValidator()
     {
-        RuleFor(x => x.Email).NotEmpty().EmailAddress();
-
         RuleFor(x => x.Username).MaximumLength(100)
             .When(x => !string.IsNullOrWhiteSpace(x.Username));
 
@@ -25,10 +23,14 @@ public sealed class RegisterHostDraftFormValidator : AbstractValidator<RegisterH
         RuleFor(x => x.RepresentativeIdName).MaximumLength(200)
             .When(x => !string.IsNullOrWhiteSpace(x.RepresentativeIdName));
 
-        RuleFor(x => x.RepresentativeIdNumber).MaximumLength(10)
+        RuleFor(x => x.RepresentativeIdNumber)
+            .Matches(@"^\d{12}$")
+            .MaximumLength(12)
             .When(x => !string.IsNullOrWhiteSpace(x.RepresentativeIdNumber));
 
-        RuleFor(x => x.TaxCode).MaximumLength(10)
+        RuleFor(x => x.TaxCode)
+            .Matches(@"^\d{10}$")
+            .MaximumLength(10)
             .When(x => !string.IsNullOrWhiteSpace(x.TaxCode));
 
         RuleFor(x => x.BusinessName).MaximumLength(200)

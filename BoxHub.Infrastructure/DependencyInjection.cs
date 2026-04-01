@@ -42,7 +42,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped <IFacilityService, FacilityService>();
             services.AddScoped<IAmenityService, AmenityService>();
             services.AddScoped<IBrandService, BrandService>();
-
+            services.AddScoped<IOtpService, OtpService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddSingleton<IHostRegistrationJobClient, HostRegistrationJobClient>();
