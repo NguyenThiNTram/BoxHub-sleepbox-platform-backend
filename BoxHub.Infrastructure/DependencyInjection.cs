@@ -60,6 +60,9 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IPlatformFeeConfigService, PlatformFeeConfigService>();
             services.AddScoped<IAddonServiceService, AddonServiceService>();
             services.AddScoped<IModeratorService, ModeratorService>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IOtpService, OtpService>();
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
