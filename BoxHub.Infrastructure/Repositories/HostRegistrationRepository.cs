@@ -1,7 +1,7 @@
 using BoxHub.Application.Interfaces.Repositories;
+using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
 using BoxHub.Infrastructure.Data;
-using BoxHub.Infrastructure.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoxHub.Infrastructure.Repositories;

@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace BoxHub.API.Controllers;
 
 [ApiController]
-[Route("api/auth/guest")]
+[Route("api/user")]
 [Authorize]
 public class UsersController : ControllerBase
 {
@@ -34,6 +34,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("me/profile")]
+    [HttpPatch("me/profile")]
     public async Task<ActionResult> UpdateMeProfile(
         [FromBody] UpdateUserProfileRequest request,
         CancellationToken ct)
@@ -44,6 +45,20 @@ public class UsersController : ControllerBase
             return Unauthorized(ErrorFactory.Unauthorized(HttpContext));
 
         var result = await _userService.UpdateUserProfileAsync(userId.Value, request, ct);
+
+        return Ok(result);
+    }
+
+    [HttpPost("me/avatar")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult> UploadAvatar(IFormFile avatar, CancellationToken ct)
+    {
+        var userId = GetUserId();
+
+        if (userId == null)
+            return Unauthorized(ErrorFactory.Unauthorized(HttpContext));
+
+        var result = await _userService.UploadAvatarAsync(userId.Value, avatar, ct);
 
         return Ok(result);
     }

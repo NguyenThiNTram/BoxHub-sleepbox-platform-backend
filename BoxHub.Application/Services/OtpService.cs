@@ -7,7 +7,6 @@ using BoxHub.Application.Interfaces.Repositories;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
-using BoxHub.Infrastructure.Domain.Entities;
 using BoxHub.Shared.Errors;
 using BoxHub.Shared.Helpers;
 using BoxHub.Shared.Results;

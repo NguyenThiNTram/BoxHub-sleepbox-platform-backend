@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using BoxHub.Domain.Enums;
 
-namespace BoxHub.Infrastructure.Domain.Entities;
+namespace BoxHub.Domain.Entities;
 
 public partial class email_otp
 {

@@ -101,6 +101,12 @@ namespace BoxHub.Application.Services
             return _jwtService.GenerateAccessToken(newUser);
         }
 
+        public Task LogoutAsync(CancellationToken ct)
+        {
+            _ = ct;
+            return Task.CompletedTask;
+        }
+
         private static string BuildUsernameFromEmail(string email)
         {
             var index = email.IndexOf('@');

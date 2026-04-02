@@ -1,5 +1,5 @@
+using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
-using BoxHub.Infrastructure.Domain.Entities;
 
 namespace BoxHub.Application.Interfaces.Repositories;
 

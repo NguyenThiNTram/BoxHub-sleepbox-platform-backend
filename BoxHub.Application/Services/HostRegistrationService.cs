@@ -6,14 +6,13 @@ using BoxHub.Application.Interfaces;
 using BoxHub.Application.Interfaces.Repositories;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Application.Models.HostRegistration;
+using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
-using BoxHub.Infrastructure.Domain.Entities;
 using BoxHub.Shared.Errors;
 using BoxHub.Shared.Helpers;
 using BoxHub.Shared.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using System.IO;
 using System.Text.RegularExpressions;
 
 namespace BoxHub.Application.Services;

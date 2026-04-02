@@ -2,7 +2,6 @@ using BoxHub.Application.Interfaces;
 using BoxHub.Application.Interfaces.Repositories;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Application.Services;
-using BoxHub.Infrastructure.Auth;
 using BoxHub.Infrastructure.BackgroundJobs;
 using BoxHub.Infrastructure.Repositories;
 using BoxHub.Infrastructure.Services;
@@ -15,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BoxHub.Infrastructure.Security;
 
 namespace BoxHub.Infrastructure
 {
@@ -29,6 +29,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IFacilityRepository, FacilityRepository>();
             services.AddScoped<IAmenityRepository, AmenityRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
+            services.AddScoped<IHostPayoutRepository, HostPayoutRepository>();
 
             //SERVICE
 
@@ -43,6 +44,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IAmenityService, AmenityService>();
             services.AddScoped<IBrandService, BrandService>();
             services.AddScoped<IOtpService, OtpService>();
+            services.AddScoped<IHostPayoutService, HostPayoutService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddSingleton<IHostRegistrationJobClient, HostRegistrationJobClient>();

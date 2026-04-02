@@ -1,5 +1,6 @@
 using BoxHub.Application.DTOs.Requests.Users;
 using BoxHub.Application.DTOs.Responses.Users;
+using Microsoft.AspNetCore.Http;
 
 namespace BoxHub.Application.Interfaces.Services
 {
@@ -7,6 +8,7 @@ namespace BoxHub.Application.Interfaces.Services
     {
         Task<UserProfileResponse> GetCurrentUserAsync(Guid userId, CancellationToken ct);
         Task<UserProfileResponse> UpdateUserProfileAsync(Guid userId, UpdateUserProfileRequest request, CancellationToken ct);
+        Task<UserProfileResponse> UploadAvatarAsync(Guid userId, IFormFile? avatar, CancellationToken ct);
         Task SoftDeleteAccountAsync(Guid userId, CancellationToken ct);
         Task ReactivateAccountAsync(Guid userId, CancellationToken ct);
     }

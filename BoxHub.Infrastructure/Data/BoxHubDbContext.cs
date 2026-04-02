@@ -1,6 +1,5 @@
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
-using BoxHub.Infrastructure.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -632,6 +631,7 @@ public partial class BoxHubDbContext : DbContext
             entity.Property(e => e.account_number).HasColumnType("character varying");
             entity.Property(e => e.bank_name).HasColumnType("character varying");
             entity.Property(e => e.created_at).HasDefaultValueSql("now()");
+            entity.Property(e => e.updated_at);
             entity.Property(e => e.is_primary).HasDefaultValue(false);
             entity.Property(e => e.payment_method).HasColumnType("character varying");
 
