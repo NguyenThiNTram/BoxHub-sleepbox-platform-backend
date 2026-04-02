@@ -14,13 +14,12 @@ using BoxHub.Shared.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace BoxHub.Application.Services;
 
 public sealed class HostRegistrationService : IHostRegistrationService
 {
-    private const OTPPurpose OtpPurpose = OTPPurpose.VERIFY_EMAIL;
-
     private readonly IHostRegistrationRepository _drafts;
     private readonly IUserRepository _users;
     private readonly ICloudinaryService _cloudinary;
@@ -53,210 +52,110 @@ public sealed class HostRegistrationService : IHostRegistrationService
         _email = email;
     }
 
-    /// <inheritdoc />
-    public async Task<Result<RegisterHostDraftResponse>> RegisterDraftAsync(RegisterHostDraftForm form, CancellationToken ct)
+    public async Task<Result<RegisterHostDraftResponse>> CreateDraftAsync(string? token, RegisterHostDraftForm form, CancellationToken ct)
     {
-        var email = NormalizeEmail(form.Email);
-        if (string.IsNullOrWhiteSpace(email))
-            return Result<RegisterHostDraftResponse>.Failure(ErrorCodes.ValidationFailed, "Email không hợp lệ.", 400);
+        var parsed = _jwt.TryValidateHostRegistrationToken(token ?? "");
+        if (parsed == null || !string.Equals(parsed.TokenUse, HostRegistrationTokenUses.EmailVerified, StringComparison.OrdinalIgnoreCase))
+            return Result<RegisterHostDraftResponse>.Failure(ErrorCodes.TokenInvalid, "Token không hợp lệ.", 401);
 
-        // Validate email format (đảm bảo “email hợp lệ” đúng theo yêu cầu bước 1).
-        try
-        {
-            _ = new System.Net.Mail.MailAddress(email);
-        }
-        catch
-        {
-            return Result<RegisterHostDraftResponse>.Failure(ErrorCodes.ValidationFailed, "Email không hợp lệ.", 400);
-        }
+        var emailNorm = NormalizeEmail(parsed.Email);
+        if (string.IsNullOrWhiteSpace(emailNorm))
+            return Result<RegisterHostDraftResponse>.Failure(ErrorCodes.ValidationFailed, "Email trong token không hợp lệ.", 400);
 
-        // Nếu email đã là HOST thì chặn tạo request mới.
-        var existingUser = await _users.GetByEmailAsync(email, ct);
+        var existingUser = await _users.GetByEmailAsync(emailNorm, ct);
         if (existingUser != null && existingUser.role == UserRole.Host)
             return Result<RegisterHostDraftResponse>.Failure(ErrorCodes.EmailExists, "Email đã được đăng ký làm Host.", 409);
 
-        // Còn bản nháp chưa hoàn tất (chưa duyệt xong / is_verified) — không tạo POST mới (dùng OTP hoặc link sửa).
-        var latest = await _drafts.FindLatestDraftByEmailAsync(email, ct);
+        var latest = await _drafts.FindLatestDraftByEmailAsync(emailNorm, ct);
         if (latest != null && !latest.is_verified)
+        {
             return Result<RegisterHostDraftResponse>.Failure(
                 ErrorCodes.ValidationFailed,
-                "Đã tồn tại bản nháp cho email này. Vui lòng xác thực OTP, hoặc dùng liên kết chỉnh sửa nếu được gửi từ moderator.",
+                "Đã tồn tại bản nháp cho email này. Vui lòng cập nhật bản nháp hiện tại.",
                 409);
+        }
 
-        var rate = await CheckOtpRateLimitsForNewOtpAsync(email, ct);
-        if (!rate.Ok)
-            return Result<RegisterHostDraftResponse>.Failure(rate.Code!, rate.Message!, rate.Status ?? 429);
+        // Build payload giống PUT nhưng email lấy từ token.
+        var user = await _users.GetByEmailAsync(emailNorm, ct);
 
-        var otpCode = GenerateOtpCode();
-        var utcNow = DateTime.UtcNow;
+        string username;
+        string? phone;
+        string? firstName;
+        string? lastName;
 
-        var otp = new email_otp
+        if (user != null)
         {
-            otp_id = Guid.NewGuid(),
-            email = email,
-            otp_code = otpCode,
-            purpose = OtpPurpose,
-            expire_at = utcNow.AddMinutes(10),
-            is_used = false,
-            attempt_count = 0,
-            created_at = utcNow
+            username = user.username;
+            phone = user.phone;
+            var profile = await _users.GetProfileAsync(user.user_id, ct);
+            firstName = profile?.first_name?.Trim();
+            lastName = profile?.last_name?.Trim();
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(form.Username))
+                return Result<RegisterHostDraftResponse>.Failure(ErrorCodes.ValidationFailed, "Thiếu username.", 400);
+
+            username = form.Username.Trim();
+            phone = form.Phone?.Trim();
+            firstName = form.FirstName?.Trim();
+            lastName = form.LastName?.Trim();
+        }
+
+        if (form.RepresentativeFrontUrl is { Length: > 0 } front && !IsImageFile(front))
+            return Result<RegisterHostDraftResponse>.Failure(
+                ErrorCodes.ValidationFailed,
+                "Ảnh mặt trước CCCD chỉ chấp nhận định dạng file ảnh (image/*).",
+                400);
+
+        if (form.RepresentativeBackUrl is { Length: > 0 } back && !IsImageFile(back))
+            return Result<RegisterHostDraftResponse>.Failure(
+                ErrorCodes.ValidationFailed,
+                "Ảnh mặt sau CCCD chỉ chấp nhận định dạng file ảnh (image/*).",
+                400);
+
+        var empty = new HostDraftPayloadModel
+        {
+            Email = emailNorm,
+            EmailVerifiedAt = DateTime.UtcNow,
+            ReviewStatus = "pending"
         };
 
+        var merged = await BuildPayloadFromFormAsync(
+            form,
+            emailNorm,
+            empty,
+            username,
+            phone,
+            firstName,
+            lastName,
+            ct);
+
+        var draftVal = await ValidateMergedHostDraftAsync(merged, emailNorm, ct);
+        if (!draftVal.Ok)
+            return Result<RegisterHostDraftResponse>.Failure(draftVal.Code!, draftVal.Message!, draftVal.Status);
+
+        var now = DateTime.UtcNow;
         var draft = new host_registration_draft
         {
             draft_id = Guid.NewGuid(),
-            email = email,
-            otp_id = otp.otp_id,
-            payload = HostRegistrationJson.SerializePayload(new HostDraftPayloadModel
-            {
-                Email = email,
-                ReviewStatus = "email_verification_pending"
-            }),
+            email = emailNorm,
+            otp_id = null,
+            payload = HostRegistrationJson.SerializePayload(merged),
             is_verified = false,
-            expire_at = utcNow.AddDays(30),
-            created_at = utcNow,
-            updated_at = utcNow
+            expire_at = now.AddDays(30),
+            created_at = now,
+            updated_at = now,
+            phone = merged.Phone?.Trim()
         };
 
-        await _drafts.AddOtpAsync(otp, ct);
         await _drafts.AddDraftAsync(draft, ct);
         await _uow.SaveChangesAsync(ct);
-
-        var sent = await SendOtpEmailAsync(email, otpCode, ct);
-        if (!sent)
-            return Result<RegisterHostDraftResponse>.Failure(ErrorCodes.EmailSendFailed, "Không gửi được email OTP. Vui lòng thử lại sau.", 500);
 
         return Result<RegisterHostDraftResponse>.Success(new RegisterHostDraftResponse
         {
             DraftId = draft.draft_id,
-            Message = "Đã tạo bản nháp. Vui lòng kiểm tra email để lấy mã OTP."
-        });
-    }
-
-    /// <inheritdoc />
-    public async Task<Result<VerifyOtpResponse>> VerifyOtpAsync(VerifyOtpRequest request, CancellationToken ct)
-    {
-        var email = NormalizeEmail(request.Email);
-        var code = request.OtpCode.Trim();
-
-        var utcNow = DateTime.UtcNow;
-        var otpMatch = await _drafts.FindValidOtpAsync(email, code, OtpPurpose, utcNow, ct);
-        if (otpMatch == null)
-        {
-            var latestOtp = await _drafts.GetLatestOtpForEmailAsync(email, OtpPurpose, ct);
-            if (latestOtp != null && !latestOtp.is_used && latestOtp.expire_at > utcNow)
-            {
-                latestOtp.attempt_count += 1;
-                await _drafts.UpdateOtpAsync(latestOtp, ct);
-                await _uow.SaveChangesAsync(ct);
-            }
-
-            return Result<VerifyOtpResponse>.Failure(ErrorCodes.OtpInvalid, "Mã OTP không đúng hoặc đã hết hạn.", 400);
-        }
-
-        var draft = await _drafts.GetDraftByOtpIdAsync(otpMatch.otp_id, track: true, ct);
-        if (draft == null)
-            return Result<VerifyOtpResponse>.Failure(ErrorCodes.DraftNotFound, "Không tìm thấy bản nháp.", 404);
-
-        var trackedOtp = await _drafts.GetOtpByIdAsync(otpMatch.otp_id, track: true, ct);
-        if (trackedOtp == null)
-            return Result<VerifyOtpResponse>.Failure(ErrorCodes.OtpInvalid, "OTP không hợp lệ.", 400);
-
-        var payload = HostRegistrationJson.DeserializePayload(draft.payload);
-        trackedOtp.is_used = true;
-        payload.EmailVerifiedAt = DateTime.UtcNow;
-        payload.ReviewStatus = "pending";
-        draft.payload = HostRegistrationJson.SerializePayload(payload);
-        draft.updated_at = DateTime.UtcNow;
-
-        await _drafts.UpdateOtpAsync(trackedOtp, ct);
-        await _drafts.UpdateDraftAsync(draft, ct);
-        await _uow.SaveChangesAsync(ct);
-
-        var token = _jwt.CreateHostRegistrationToken(
-            draft.draft_id,
-            draft.email,
-            HostRegistrationTokenUses.DraftEdit,
-            TimeSpan.FromDays(14));
-
-        return Result<VerifyOtpResponse>.Success(new VerifyOtpResponse
-        {
-            Success = true,
-            Message = "Xác thực email thành công.",
-            DraftId = draft.draft_id,
-            Token = token
-        });
-    }
-
-    /// <inheritdoc />
-    public async Task<Result<SimpleMessageResponse>> ResendOtpAsync(ResendOtpRequest request, CancellationToken ct)
-    {
-        var email = NormalizeEmail(request.Email);
-        var utcNow = DateTime.UtcNow;
-
-        var latest = await _drafts.GetLatestOtpForEmailAsync(email, OtpPurpose, ct);
-        if (latest != null && (utcNow - latest.created_at).TotalSeconds < 60)
-            return Result<SimpleMessageResponse>.Failure(ErrorCodes.OtpRateLimited,
-                "Vui lòng đợi ít nhất 60 giây trước khi gửi lại OTP.", 429);
-
-        var draft = await _drafts.FindLatestDraftByEmailAsync(email, ct);
-        if (draft == null)
-            return Result<SimpleMessageResponse>.Failure(ErrorCodes.DraftNotFound, "Không có bản nháp cho email này.", 404);
-
-        if (!draft.otp_id.HasValue)
-            return Result<SimpleMessageResponse>.Failure(ErrorCodes.OtpInvalid, "Không có OTP để gửi lại.", 400);
-
-        var otp = await _drafts.GetOtpByIdAsync(draft.otp_id.Value, track: false, ct);
-        if (otp == null)
-            return Result<SimpleMessageResponse>.Failure(ErrorCodes.OtpInvalid, "Không có OTP để gửi lại.", 400);
-
-        // Gửi lại đúng mã nếu chưa dùng và chưa hết hạn (không tạo bản ghi mới — không tăng count 5/10p).
-        if (!otp.is_used && otp.expire_at > utcNow)
-        {
-            var sent = await SendOtpEmailAsync(email, otp.otp_code, ct);
-            if (!sent)
-                return Result<SimpleMessageResponse>.Failure(ErrorCodes.EmailSendFailed, "Không gửi được email OTP. Vui lòng thử lại sau.", 500);
-            return Result<SimpleMessageResponse>.Success(new SimpleMessageResponse
-            {
-                Success = true,
-                Message = "Đã gửi lại mã OTP qua email."
-            });
-        }
-
-        // Tạo OTP mới — áp dụng giới hạn 5 lần / 10 phút (theo created_at).
-        var count = await _drafts.CountOtpsCreatedSinceAsync(email, OtpPurpose, utcNow.AddMinutes(-10), ct);
-        if (count >= 5)
-            return Result<SimpleMessageResponse>.Failure(ErrorCodes.OtpRateLimited,
-                "Đã vượt quá 5 lần gửi OTP trong 10 phút.", 429);
-
-        var newOtp = new email_otp
-        {
-            otp_id = Guid.NewGuid(),
-            email = email,
-            otp_code = GenerateOtpCode(),
-            purpose = OtpPurpose,
-            expire_at = utcNow.AddMinutes(10),
-            is_used = false,
-            attempt_count = 0,
-            created_at = utcNow
-        };
-
-        await _drafts.AddOtpAsync(newOtp, ct);
-        var trackedDraft = await _drafts.GetDraftByIdAsync(draft.draft_id, track: true, ct);
-        if (trackedDraft == null)
-            return Result<SimpleMessageResponse>.Failure(ErrorCodes.DraftNotFound, "Không tìm thấy bản nháp.", 404);
-        trackedDraft.otp_id = newOtp.otp_id;
-        trackedDraft.updated_at = utcNow;
-        await _drafts.UpdateDraftAsync(trackedDraft, ct);
-        await _uow.SaveChangesAsync(ct);
-
-        var sentNew = await SendOtpEmailAsync(email, newOtp.otp_code, ct);
-        if (!sentNew)
-            return Result<SimpleMessageResponse>.Failure(ErrorCodes.EmailSendFailed, "Không gửi được email OTP. Vui lòng thử lại sau.", 500);
-        return Result<SimpleMessageResponse>.Success(new SimpleMessageResponse
-        {
-            Success = true,
-            Message = "Đã gửi mã OTP mới qua email."
+            Message = "Đã tạo bản nháp."
         });
     }
 
@@ -268,11 +167,8 @@ public sealed class HostRegistrationService : IHostRegistrationService
         CancellationToken ct)
     {
         var parsed = _jwt.TryValidateHostRegistrationToken(token ?? "");
-        if (parsed == null || !string.Equals(parsed.TokenUse, HostRegistrationTokenUses.DraftEdit, StringComparison.OrdinalIgnoreCase))
+        if (parsed == null || !string.Equals(parsed.TokenUse, HostRegistrationTokenUses.EmailVerified, StringComparison.OrdinalIgnoreCase))
             return Result<SimpleMessageResponse>.Failure(ErrorCodes.TokenInvalid, "Token không hợp lệ.", 401);
-
-        if (parsed.SubjectId != draftId)
-            return Result<SimpleMessageResponse>.Failure(ErrorCodes.TokenInvalid, "Token không khớp bản nháp.", 400);
 
         var draft = await _drafts.GetDraftByIdAsync(draftId, track: true, ct);
         if (draft == null)
@@ -281,7 +177,7 @@ public sealed class HostRegistrationService : IHostRegistrationService
         if (!string.Equals(NormalizeEmail(parsed.Email), draft.email, StringComparison.Ordinal))
             return Result<SimpleMessageResponse>.Failure(ErrorCodes.Forbidden, "Email không khớp token.", 403);
 
-        // Chỉnh sửa chỉ khi chưa được moderator duyệt (sau approve is_verified = true).
+
         if (draft.is_verified)
             return Result<SimpleMessageResponse>.Failure(ErrorCodes.DraftLocked, "Bản nháp đã được duyệt, không thể chỉnh sửa.", 403);
 
@@ -289,11 +185,7 @@ public sealed class HostRegistrationService : IHostRegistrationService
         if (string.Equals(existingPayload.ReviewStatus, "processing", StringComparison.OrdinalIgnoreCase))
             return Result<SimpleMessageResponse>.Failure(ErrorCodes.DraftLocked, "Hồ sơ đang được xử lý.", 423);
 
-        // Luồng mới: bắt buộc OTP đã verify trước khi điền thông tin Host.
-        if (existingPayload.EmailVerifiedAt == null)
-            return Result<SimpleMessageResponse>.Failure(ErrorCodes.Forbidden, "Chưa xác thực email (OTP).", 403);
 
-        // Lấy user/profile để fill các trường (nếu email đã tồn tại).
         var emailNorm = NormalizeEmail(draft.email);
         var user = await _users.GetByEmailAsync(emailNorm, ct);
 
@@ -312,7 +204,7 @@ public sealed class HostRegistrationService : IHostRegistrationService
         }
         else
         {
-            // Trường hợp email chưa có user: cho phép (nếu FE gửi) nhưng vẫn theo nguyên tắc “OTP-first”.
+
             if (string.IsNullOrWhiteSpace(form.Username))
                 return Result<SimpleMessageResponse>.Failure(ErrorCodes.ValidationFailed, "Thiếu username.", 400);
 
@@ -320,14 +212,8 @@ public sealed class HostRegistrationService : IHostRegistrationService
             phone = form.Phone?.Trim();
             firstName = form.FirstName?.Trim();
             lastName = form.LastName?.Trim();
-
-            // Chặn username trùng nếu tạo user mới.
-            var uByName = await _users.GetByUsernameAsync(username, ct);
-            if (uByName != null && !string.Equals(uByName.email, emailNorm, StringComparison.OrdinalIgnoreCase))
-                return Result<SimpleMessageResponse>.Failure(ErrorCodes.UsernameExists, "Tên đăng nhập đã tồn tại.", 409);
         }
 
-        // Validate định dạng CCCD: chỉ chấp nhận ảnh.
         if (form.RepresentativeFrontUrl is { Length: > 0 } front && !IsImageFile(front))
             return Result<SimpleMessageResponse>.Failure(
                 ErrorCodes.ValidationFailed,
@@ -350,54 +236,9 @@ public sealed class HostRegistrationService : IHostRegistrationService
             lastName,
             ct);
 
-        if (string.IsNullOrWhiteSpace(merged.BrandName))
-        {
-            return Result<SimpleMessageResponse>.Failure(
-                ErrorCodes.ValidationFailed,
-                "Tên thương hiệu là bắt buộc.",
-                400);
-        }
-
-        if (string.IsNullOrWhiteSpace(merged.BrandAvatarUrl))
-        {
-            return Result<SimpleMessageResponse>.Failure(
-                ErrorCodes.ValidationFailed,
-                "Logo thương hiệu là bắt buộc.",
-                400);
-        }
-
-        if (!string.IsNullOrWhiteSpace(merged.RepresentativeIdNumber))
-        {
-            var repNorm = merged.RepresentativeIdNumber.Trim().ToUpperInvariant();
-            if (await _drafts.RepresentativeIdNumberTakenAsync(repNorm, ct))
-            {
-                return Result<SimpleMessageResponse>.Failure(
-                    ErrorCodes.ValidationFailed,
-                    "Số CCCD/CMND đã được sử dụng cho tài khoản Host khác.",
-                    409);
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(merged.TaxCode))
-        {
-            var taxNorm = merged.TaxCode.Trim().ToUpperInvariant();
-            if (await _drafts.TaxCodeTakenAsync(taxNorm, ct))
-            {
-                return Result<SimpleMessageResponse>.Failure(
-                    ErrorCodes.ValidationFailed,
-                    "Mã số thuế đã được sử dụng.",
-                    409);
-            }
-        }
-
-        var brandNorm = merged.BrandName.Trim().ToUpperInvariant();
-        if (await _drafts.BrandNameTakenAsync(brandNorm, ct))
-        {
-            return Result<SimpleMessageResponse>.Failure(
-                ErrorCodes.ValidationFailed,
-                "Tên thương hiệu đã được sử dụng.",
-                409);
-        }
+        var updateVal = await ValidateMergedHostDraftAsync(merged, emailNorm, ct);
+        if (!updateVal.Ok)
+            return Result<SimpleMessageResponse>.Failure(updateVal.Code!, updateVal.Message!, updateVal.Status);
 
         merged.ReviewStatus = "pending";
         merged.RejectReason = null;
@@ -427,11 +268,8 @@ public sealed class HostRegistrationService : IHostRegistrationService
         CancellationToken ct)
     {
         var parsed = _jwt.TryValidateHostRegistrationToken(token ?? "");
-        if (parsed == null || !string.Equals(parsed.TokenUse, HostRegistrationTokenUses.DraftEdit, StringComparison.OrdinalIgnoreCase))
+        if (parsed == null || !string.Equals(parsed.TokenUse, HostRegistrationTokenUses.EmailVerified, StringComparison.OrdinalIgnoreCase))
             return Result<HostDraftForEditResponse>.Failure(ErrorCodes.TokenInvalid, "Token không hợp lệ.", 401);
-
-        if (parsed.SubjectId != draftId)
-            return Result<HostDraftForEditResponse>.Failure(ErrorCodes.TokenInvalid, "Token không khớp bản nháp.", 400);
 
         var draft = await _drafts.GetDraftByIdAsync(draftId, track: false, ct);
         if (draft == null)
@@ -673,18 +511,47 @@ public sealed class HostRegistrationService : IHostRegistrationService
 
     private static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
 
-    private static string GenerateOtpCode() => Random.Shared.Next(100000, 1_000_000).ToString();
-
-    private async Task<bool> SendOtpEmailAsync(string email, string code, CancellationToken ct)
+    private async Task<(bool Ok, string? Code, string? Message, int Status)> ValidateMergedHostDraftAsync(
+        HostDraftPayloadModel merged,
+        string registrantEmailNorm,
+        CancellationToken ct)
     {
-        _ = ct;
-        return await _email.SendEmailAsync(new MailData
-        {
-            EmailToId = email,
-            EmailToName = email,
-            EmailSubject = "BoxHub — Mã OTP đăng ký Host",
-            EmailBody = $"<p>Mã OTP của bạn: <strong>{code}</strong> (hiệu lực 10 phút).</p>"
-        });
+        if (string.IsNullOrWhiteSpace(merged.Username))
+            return (false, ErrorCodes.ValidationFailed, "Thiếu username.", 400);
+
+        var uname = merged.Username.Trim();
+        var byName = await _users.GetByUsernameAsync(uname, ct);
+        if (byName != null
+            && !string.Equals(NormalizeEmail(byName.email), registrantEmailNorm, StringComparison.OrdinalIgnoreCase))
+            return (false, ErrorCodes.UsernameExists, "Tên đăng nhập đã tồn tại.", 409);
+
+        if (string.IsNullOrWhiteSpace(merged.RepresentativeIdNumber)
+            || !Regex.IsMatch(merged.RepresentativeIdNumber.Trim(), @"^\d{12}$"))
+            return (false, ErrorCodes.ValidationFailed, "Số CCCD phải gồm đúng 12 chữ số.", 400);
+
+        var rep = merged.RepresentativeIdNumber.Trim();
+        if (await _drafts.RepresentativeIdNumberTakenAsync(rep, ct))
+            return (false, ErrorCodes.ValidationFailed, "Số CCCD/CMND đã được sử dụng cho tài khoản Host khác.", 409);
+
+        if (string.IsNullOrWhiteSpace(merged.TaxCode)
+            || !Regex.IsMatch(merged.TaxCode.Trim(), @"^\d{10}$"))
+            return (false, ErrorCodes.ValidationFailed, "Mã số thuế phải gồm đúng 10 chữ số.", 400);
+
+        var tax = merged.TaxCode.Trim();
+        if (await _drafts.TaxCodeTakenAsync(tax, ct))
+            return (false, ErrorCodes.ValidationFailed, "Mã số thuế đã được sử dụng.", 409);
+
+        if (string.IsNullOrWhiteSpace(merged.BrandName))
+            return (false, ErrorCodes.ValidationFailed, "Tên thương hiệu (brand_name) là bắt buộc.", 400);
+
+        if (string.IsNullOrWhiteSpace(merged.BrandAvatarUrl))
+            return (false, ErrorCodes.ValidationFailed, "Logo thương hiệu (brand_avatar) là bắt buộc.", 400);
+
+        var brandNorm = merged.BrandName.Trim().ToUpperInvariant();
+        if (await _drafts.BrandNameTakenAsync(brandNorm, ct))
+            return (false, ErrorCodes.ValidationFailed, "Tên thương hiệu đã được sử dụng.", 409);
+
+        return (true, null, null, 0);
     }
 
     private async Task<HostDraftPayloadModel> BuildPayloadFromFormAsync(
@@ -809,26 +676,6 @@ public sealed class HostRegistrationService : IHostRegistrationService
             ModeratorId = existingPayload.ModeratorId,
             EmailVerifiedAt = existingPayload.EmailVerifiedAt
         };
-    }
-
-    /// <summary>Đăng ký draft: luôn tạo bản ghi OTP mới — kiểm tra 60s + tối đa 5 bản ghi / 10 phút.</summary>
-    private async Task<(bool Ok, string? Code, string? Message, int? Status)> CheckOtpRateLimitsForNewOtpAsync(
-        string email,
-        CancellationToken ct)
-    {
-        var utcNow = DateTime.UtcNow;
-        var windowStart = utcNow.AddMinutes(-10);
-
-        var latest = await _drafts.GetLatestOtpForEmailAsync(email, OtpPurpose, ct);
-        if (latest != null && (utcNow - latest.created_at).TotalSeconds < 60)
-            return (false, ErrorCodes.OtpRateLimited, "Vui lòng đợi ít nhất 60 giây trước khi gửi OTP.", 429);
-
-        var count = await _drafts.CountOtpsCreatedSinceAsync(email, OtpPurpose, windowStart, ct);
-        if (count >= 5)
-            return (false, ErrorCodes.OtpRateLimited, "Đã vượt quá 5 lần gửi OTP trong 10 phút.", 429);
-
-        _ = ct;
-        return (true, null, null, null);
     }
 
     /// <summary>

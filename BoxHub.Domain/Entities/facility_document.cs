@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using BoxHub.Domain.Enums;
 
 namespace BoxHub.Domain.Entities;
 public class facility_document
@@ -11,12 +13,7 @@ public class facility_document
 
     public Guid facility_id { get; set; }
 
-    public string document_type { get; set; } = null!;
-
-    /*
-        PCCC
-        BUSINESS_LICENSE
-    */
+    public FacilityDocumentType document_type { get; set; }
 
     public int version { get; set; }
 
