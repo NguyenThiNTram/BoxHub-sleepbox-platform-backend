@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace BoxHub.Infrastructure.Auth;
+namespace BoxHub.Infrastructure.Security;
 
 public sealed class JwtService : IJwtService
 {

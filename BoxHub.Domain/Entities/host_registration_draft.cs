@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BoxHub.Infrastructure.Domain.Entities;
+namespace BoxHub.Domain.Entities;
 
 public partial class host_registration_draft
 {

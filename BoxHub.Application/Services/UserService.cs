@@ -16,12 +16,18 @@ namespace BoxHub.Application.Services
         private readonly IUserRepository _users;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _uow;
+        private readonly ICloudinaryService _cloudinary;
 
-        public UserService(IUserRepository users, IMapper mapper, IUnitOfWork uow)
+        public UserService(
+            IUserRepository users,
+            IMapper mapper,
+            IUnitOfWork uow,
+            ICloudinaryService cloudinary)
         {
             _users = users;
             _mapper = mapper;
             _uow = uow;
+            _cloudinary = cloudinary;
         }
 
         public async Task<UserProfileResponse> GetCurrentUserAsync(Guid userId, CancellationToken ct)
@@ -29,9 +35,7 @@ namespace BoxHub.Application.Services
             var user = await _users.GetByIdAsync(userId, ct);
 
             if (user == null)
-                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
-
-            var profile = await _users.GetProfileAsync(userId, ct);
+                throw new ApiException(ErrorCodes.UserNotFound, "Không tìm thấy người dùng", 404);
 
             return _mapper.Map<UserProfileResponse>(user);
         }
@@ -41,39 +45,91 @@ namespace BoxHub.Application.Services
             var user = await _users.GetByIdAsync(userId, ct);
 
             if (user == null)
-                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
+                throw new ApiException(ErrorCodes.UserNotFound, "Không tìm thấy người dùng", 404);
 
-            await _uow.BeginTransactionAsync(ct);
-
-            try
+            if (request.Username != null)
             {
-                UpdateUser(user, request);
+                var uname = request.Username.Trim();
+                if (string.IsNullOrEmpty(uname))
+                    throw new ApiException(ErrorCodes.ValidationFailed, "Tên đăng nhập không hợp lệ.", 400);
 
+                if (!string.Equals(user.username, uname, StringComparison.Ordinal))
+                {
+                    var byName = await _users.GetByUsernameAsync(uname, ct);
+                    if (byName != null && byName.user_id != userId)
+                        throw new ApiException(ErrorCodes.UsernameExists, "Tên đăng nhập đã tồn tại.", 409);
+                }
+
+                user.username = uname;
+            }
+
+            if (request.Phone != null)
+                user.phone = Normalize(request.Phone);
+
+            var hasProfileUpdates =
+                request.FirstName != null
+                || request.LastName != null
+                || request.Gender != null
+                || request.DateOfBirth.HasValue;
+
+            if (hasProfileUpdates)
+            {
                 var profile = await _users.GetProfileAsync(userId, ct);
-
                 if (profile == null)
                 {
                     profile = CreateProfile(userId);
-                    UpdateProfile(profile, request);
-
+                    ApplyProfileFields(profile, request);
                     await _users.CreateProfileAsync(profile, ct);
                 }
                 else
                 {
-                    UpdateProfile(profile, request);
+                    ApplyProfileFields(profile, request);
                     await _users.UpdateProfileAsync(profile, ct);
                 }
-
-                await _uow.SaveChangesAsync(ct);
-                await _uow.CommitAsync(ct);
-
-                return _mapper.Map<UserProfileResponse>(user);
             }
-            catch
+
+            await _uow.SaveChangesAsync(ct);
+
+            var refreshed = await _users.GetByIdAsync(userId, ct);
+            return _mapper.Map<UserProfileResponse>(refreshed!);
+        }
+
+        public async Task<UserProfileResponse> UploadAvatarAsync(Guid userId, IFormFile? avatar, CancellationToken ct)
+        {
+            if (avatar is not { Length: > 0 })
+                throw new ApiException(ErrorCodes.ValidationFailed, "Vui lòng gửi file ảnh avatar.", 400);
+
+            var contentType = avatar.ContentType ?? "";
+            if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                throw new ApiException(ErrorCodes.ValidationFailed, "Avatar chỉ chấp nhận file ảnh (image/*).", 400);
+
+            var url = await _cloudinary.UploadImageAsync(avatar);
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ApiException(ErrorCodes.ServerError, "Không upload được ảnh.", 500);
+
+            var user = await _users.GetByIdAsync(userId, ct);
+            if (user == null)
+                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
+
+            var profile = await _users.GetProfileAsync(userId, ct);
+            if (profile == null)
             {
-                await _uow.RollbackAsync(ct);
-                throw;
+                profile = CreateProfile(userId);
+                profile.avatar_url = url;
+                profile.updated_at = DateTime.UtcNow;
+                await _users.CreateProfileAsync(profile, ct);
             }
+            else
+            {
+                profile.avatar_url = url;
+                profile.updated_at = DateTime.UtcNow;
+                await _users.UpdateProfileAsync(profile, ct);
+            }
+
+            await _uow.SaveChangesAsync(ct);
+
+            var refreshed = await _users.GetByIdAsync(userId, ct);
+            return _mapper.Map<UserProfileResponse>(refreshed!);
         }
 
         public async Task SoftDeleteAccountAsync(Guid userId, CancellationToken ct)
@@ -108,21 +164,14 @@ namespace BoxHub.Application.Services
             await _uow.SaveChangesAsync(ct);
         }
 
-        private static void UpdateUser(user user, UpdateUserProfileRequest request)
+        private static void ApplyProfileFields(user_profile profile, UpdateUserProfileRequest request)
         {
-            if (!string.IsNullOrWhiteSpace(request.Username))
-                user.username = request.Username.Trim();
-
-            user.phone = Normalize(request.Phone);
-        }
-
-        private static void UpdateProfile(user_profile profile, UpdateUserProfileRequest request)
-        {
-            profile.first_name = Normalize(request.FirstName);
-            profile.last_name = Normalize(request.LastName);
-            profile.gender = Normalize(request.Gender);
-            profile.avatar_url = Normalize(request.AvatarUrl);
-
+            if (request.FirstName != null)
+                profile.first_name = Normalize(request.FirstName);
+            if (request.LastName != null)
+                profile.last_name = Normalize(request.LastName);
+            if (request.Gender != null)
+                profile.gender = Normalize(request.Gender);
             if (request.DateOfBirth.HasValue)
                 profile.date_of_birth = request.DateOfBirth;
 

@@ -2,7 +2,7 @@ using BoxHub.Application.Interfaces.Services;
 using BoxHub.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
-namespace BoxHub.Infrastructure.Auth;
+namespace BoxHub.Infrastructure.Security;
 
 public sealed class PasswordService : IPasswordService
 {

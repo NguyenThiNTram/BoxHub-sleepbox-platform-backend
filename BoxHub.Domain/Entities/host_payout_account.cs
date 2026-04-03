@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace BoxHub.Domain.Entities;
@@ -20,6 +20,8 @@ public partial class host_payout_account
     public bool? is_primary { get; set; }
 
     public DateTime created_at { get; set; }
+
+    public DateTime? updated_at { get; set; }
 
     public virtual host_profile host { get; set; } = null!;
 

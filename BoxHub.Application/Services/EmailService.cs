@@ -25,7 +25,7 @@ namespace BoxHub.Application.Services
             {
                 var payload = new
                 {
-                    from = "BoxHub <noreply@notify.boxhub-sleepbox.com>",
+                    from = "BoxHub <noreply@notify.boxhub-sleepbox.com>", // test ban đầu
                     to = new[] { mailData.EmailToId },
                     subject = mailData.EmailSubject,
                     html = mailData.EmailBody

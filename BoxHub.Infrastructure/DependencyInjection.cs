@@ -5,11 +5,9 @@ using BoxHub.Application.Interfaces.Services;
 using BoxHub.Application.Interfaces.Services.Pricings;
 using BoxHub.Application.Services;
 using BoxHub.Application.Services.Pricings;
-using BoxHub.Infrastructure.Auth;
 using BoxHub.Infrastructure.BackgroundJobs;
 using BoxHub.Infrastructure.Repositories;
 using BoxHub.Infrastructure.Repositories.Pricings;
-using BoxHub.Infrastructure.Services;
 using BoxHub.Shared.Helpers.Photos;
 using BoxHub.Shared.Helpers;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +17,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BoxHub.Infrastructure.Security;
+using BoxHub.Infrastructure.BackgroundJobs;
 
 namespace BoxHub.Infrastructure
 {
@@ -40,6 +40,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IPlatformFeeConfigRepository, PlatformFeeConfigRepository>();
             services.AddScoped<IAddonServiceRepository, AddonServiceRepository>();
             //services.AddScoped<IZoneRepository, ZoneRepository>();
+            services.AddScoped<IHostPayoutRepository, HostPayoutRepository>();
 
             //SERVICE
 
@@ -64,6 +65,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<IOtpService, OtpService>();
             services.AddScoped<ICloudinaryService, CloudinaryService>();
 
+            services.AddScoped<IHostPayoutService, HostPayoutService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 

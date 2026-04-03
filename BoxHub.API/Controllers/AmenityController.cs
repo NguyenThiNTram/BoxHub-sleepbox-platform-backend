@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BoxHub.API.Controllers;
 
 [ApiController]
-[Route("api/amenities")]
+[Route("api/host/amenities")]
 [Authorize(Roles = "HOST")]
 public sealed class AmenityController : ControllerBase
 {

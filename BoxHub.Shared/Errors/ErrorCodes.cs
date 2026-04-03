@@ -22,5 +22,6 @@ namespace BoxHub.Shared.Errors
         public const string TokenInvalid = "TOKEN_INVALID";
         public const string Forbidden = "FORBIDDEN";
         public const string EmailSendFailed = "EMAIL_SEND_FAILED";
+        public const string HostProfileNotFound = "HOST_PROFILE_NOT_FOUND";
     }
 }

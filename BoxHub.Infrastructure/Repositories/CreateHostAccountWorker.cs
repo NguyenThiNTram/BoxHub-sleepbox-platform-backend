@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using BoxHub.Domain.Entities;
 using BoxHub.Application.Constants;
 
-namespace BoxHub.Infrastructure.Services;
+namespace BoxHub.Infrastructure.Repositories;
 
 /// <summary>
 /// Tạo User Host + profile + tài liệu sau khi moderator approve (transaction DB).
@@ -275,7 +275,8 @@ public sealed class CreateHostAccountWorker : ICreateHostAccountWorker
                         account_number = payload.AccountNumber,
                         bank_name = payload.BankName,
                         is_primary = true,
-                        created_at = now
+                        created_at = now,
+                        updated_at = now
                     };
                     await _db.host_payout_accounts.AddAsync(payout, ct);
                 }
@@ -286,6 +287,7 @@ public sealed class CreateHostAccountWorker : ICreateHostAccountWorker
                     payout.account_number = payload.AccountNumber;
                     payout.bank_name = payload.BankName;
                     payout.is_primary = true;
+                    payout.updated_at = now;
                     _db.host_payout_accounts.Update(payout);
                 }
             }

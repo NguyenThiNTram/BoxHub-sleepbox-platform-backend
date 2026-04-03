@@ -2,8 +2,8 @@ using BoxHub.Application.Interfaces.Repositories;
 using BoxHub.Domain.Entities;
 using BoxHub.Domain.Enums;
 using BoxHub.Infrastructure.Data;
-using BoxHub.Infrastructure.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace BoxHub.Infrastructure.Repositories;
 
@@ -62,7 +62,8 @@ public sealed class HostRegistrationRepository : IHostRegistrationRepository
         if (!string.IsNullOrWhiteSpace(reviewStatusFilter))
         {
             var s = reviewStatusFilter.Trim().ToLowerInvariant();
-            q = q.Where(d => d.payload.Contains($"\"reviewStatus\":\"{s}\""));
+            var contained = JsonSerializer.Serialize(new { reviewStatus = s });
+            q = q.Where(d => EF.Functions.JsonContains(d.payload, contained));
         }
 
         var total = await q.CountAsync(ct);
@@ -74,7 +75,7 @@ public sealed class HostRegistrationRepository : IHostRegistrationRepository
         return (items, total);
     }
 
-    public Task<int> CountOtpsCreatedSinceAsync(string email, OTPPurpose purpose, DateTime sinceUtc, CancellationToken ct) =>
+    public Task<int> CountOtpsCreatedSinceAsync(string email, OTPPurpose purpose, DateTimeOffset sinceUtc, CancellationToken ct) =>
         _db.email_otps.CountAsync(
             o => o.email == email && o.purpose == purpose && o.created_at >= sinceUtc,
             ct);
@@ -89,7 +90,7 @@ public sealed class HostRegistrationRepository : IHostRegistrationRepository
         string email,
         string otpCode,
         OTPPurpose purpose,
-        DateTime utcNow,
+        DateTimeOffset utcNow,
         CancellationToken ct) =>
         await _db.email_otps
             .AsNoTracking()

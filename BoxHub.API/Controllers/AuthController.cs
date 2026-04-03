@@ -1,6 +1,7 @@
 using BoxHub.Application.DTOs.Requests.Auths;
 using BoxHub.Application.DTOs.Responses;
 using BoxHub.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoxHub.API.Controllers;
@@ -49,5 +50,13 @@ public class AuthController : ControllerBase
             ct);
 
         return Ok(result);
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout(CancellationToken ct)
+    {
+        await _authService.LogoutAsync(ct);
+        return Ok(new { success = true, message = "Đã đăng xuất." });
     }
 }
