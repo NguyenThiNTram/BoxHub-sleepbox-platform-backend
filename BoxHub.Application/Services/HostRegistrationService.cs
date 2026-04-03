@@ -13,6 +13,7 @@ using BoxHub.Shared.Helpers;
 using BoxHub.Shared.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace BoxHub.Application.Services;
@@ -74,7 +75,6 @@ public sealed class HostRegistrationService : IHostRegistrationService
                 409);
         }
 
-        // Build payload giống PUT nhưng email lấy từ token.
         var user = await _users.GetByEmailAsync(emailNorm, ct);
 
         string username;
@@ -166,12 +166,17 @@ public sealed class HostRegistrationService : IHostRegistrationService
         CancellationToken ct)
     {
         var parsed = _jwt.TryValidateHostRegistrationToken(token ?? "");
-        if (parsed == null || !string.Equals(parsed.TokenUse, HostRegistrationTokenUses.EmailVerified, StringComparison.OrdinalIgnoreCase))
+        var isEmailVerifiedToken = string.Equals(parsed?.TokenUse, HostRegistrationTokenUses.EmailVerified, StringComparison.OrdinalIgnoreCase);
+        var isDraftEditToken = string.Equals(parsed?.TokenUse, HostRegistrationTokenUses.DraftEdit, StringComparison.OrdinalIgnoreCase);
+        if (parsed == null || (!isEmailVerifiedToken && !isDraftEditToken))
             return Result<SimpleMessageResponse>.Failure(ErrorCodes.TokenInvalid, "Token không hợp lệ.", 401);
 
         var draft = await _drafts.GetDraftByIdAsync(draftId, track: true, ct);
         if (draft == null)
             return Result<SimpleMessageResponse>.Failure(ErrorCodes.DraftNotFound, "Không tìm thấy bản nháp.", 404);
+
+        if (isDraftEditToken && parsed!.SubjectId != draftId)
+            return Result<SimpleMessageResponse>.Failure(ErrorCodes.Forbidden, "Token không khớp bản nháp.", 403);
 
         if (!string.Equals(NormalizeEmail(parsed.Email), draft.email, StringComparison.Ordinal))
             return Result<SimpleMessageResponse>.Failure(ErrorCodes.Forbidden, "Email không khớp token.", 403);
@@ -267,12 +272,17 @@ public sealed class HostRegistrationService : IHostRegistrationService
         CancellationToken ct)
     {
         var parsed = _jwt.TryValidateHostRegistrationToken(token ?? "");
-        if (parsed == null || !string.Equals(parsed.TokenUse, HostRegistrationTokenUses.EmailVerified, StringComparison.OrdinalIgnoreCase))
+        var isEmailVerifiedToken = string.Equals(parsed?.TokenUse, HostRegistrationTokenUses.EmailVerified, StringComparison.OrdinalIgnoreCase);
+        var isDraftEditToken = string.Equals(parsed?.TokenUse, HostRegistrationTokenUses.DraftEdit, StringComparison.OrdinalIgnoreCase);
+        if (parsed == null || (!isEmailVerifiedToken && !isDraftEditToken))
             return Result<HostDraftForEditResponse>.Failure(ErrorCodes.TokenInvalid, "Token không hợp lệ.", 401);
 
         var draft = await _drafts.GetDraftByIdAsync(draftId, track: false, ct);
         if (draft == null)
             return Result<HostDraftForEditResponse>.Failure(ErrorCodes.DraftNotFound, "Không tìm thấy bản nháp.", 404);
+
+        if (isDraftEditToken && parsed!.SubjectId != draftId)
+            return Result<HostDraftForEditResponse>.Failure(ErrorCodes.Forbidden, "Token không khớp bản nháp.", 403);
 
         if (!string.Equals(NormalizeEmail(parsed.Email), draft.email, StringComparison.Ordinal))
             return Result<HostDraftForEditResponse>.Failure(ErrorCodes.Forbidden, "Email không khớp token.", 403);
@@ -541,10 +551,10 @@ public sealed class HostRegistrationService : IHostRegistrationService
             return (false, ErrorCodes.ValidationFailed, "Mã số thuế đã được sử dụng.", 409);
 
         if (string.IsNullOrWhiteSpace(merged.BrandName))
-            return (false, ErrorCodes.ValidationFailed, "Tên thương hiệu (brand_name) là bắt buộc.", 400);
+            return (false, ErrorCodes.ValidationFailed, "Tên thương hiệu là bắt buộc.", 400);
 
         if (string.IsNullOrWhiteSpace(merged.BrandAvatarUrl))
-            return (false, ErrorCodes.ValidationFailed, "Logo thương hiệu (brand_avatar) là bắt buộc.", 400);
+            return (false, ErrorCodes.ValidationFailed, "Logo thương hiệu là bắt buộc.", 400);
 
         var brandNorm = merged.BrandName.Trim().ToUpperInvariant();
         if (await _drafts.BrandNameTakenAsync(brandNorm, ct))

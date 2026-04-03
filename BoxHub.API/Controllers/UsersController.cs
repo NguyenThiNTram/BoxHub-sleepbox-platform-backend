@@ -33,7 +33,6 @@ public class UsersController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("me/profile")]
     [HttpPatch("me/profile")]
     public async Task<ActionResult> UpdateMeProfile(
         [FromBody] UpdateUserProfileRequest request,

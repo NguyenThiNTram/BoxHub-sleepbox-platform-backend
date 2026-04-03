@@ -7,16 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BoxHub.API.Controllers;
 
-/// <summary>Moderator — duyệt hồ sơ đăng ký Host.</summary>
 [ApiController]
-// Phải khớp claim role trong JWT: JwtService dùng ToUpperInvariant() → "MODERATOR", không phải "Moderator".
 [Authorize(Roles = "MODERATOR")]
-[Route("api/moderator")]
-public sealed class ModeratorHostDraftsController : ControllerBase
+[Route("api")]
+public sealed class ModeratorController : ControllerBase
 {
     private readonly IHostRegistrationService _svc;
 
-    public ModeratorHostDraftsController(IHostRegistrationService svc)
+    public ModeratorController(IHostRegistrationService svc)
     {
         _svc = svc;
     }
@@ -68,7 +66,6 @@ public sealed class ModeratorHostDraftsController : ControllerBase
         return Ok(result.Value);
     }
 
-    /// <summary>Lấy user_id từ JWT (sub hoặc NameIdentifier).</summary>
     private Guid? GetModeratorUserId()
     {
         var sub =

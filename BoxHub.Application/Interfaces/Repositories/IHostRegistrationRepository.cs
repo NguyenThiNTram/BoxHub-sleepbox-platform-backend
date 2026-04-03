@@ -18,12 +18,12 @@ public interface IHostRegistrationRepository
         string? reviewStatusFilter,
         CancellationToken ct);
 
-    Task<int> CountOtpsCreatedSinceAsync(string email, OTPPurpose purpose, DateTime sinceUtc, CancellationToken ct);
+    Task<int> CountOtpsCreatedSinceAsync(string email, OTPPurpose purpose, DateTimeOffset sinceUtc, CancellationToken ct);
 
     /// <summary>Bản ghi OTP mới nhất (theo created_at) cho email + mục đích.</summary>
     Task<email_otp?> GetLatestOtpForEmailAsync(string email, OTPPurpose purpose, CancellationToken ct);
 
-    Task<email_otp?> FindValidOtpAsync(string email, string otpCode, OTPPurpose purpose, DateTime utcNow, CancellationToken ct);
+    Task<email_otp?> FindValidOtpAsync(string email, string otpCode, OTPPurpose purpose, DateTimeOffset utcNow, CancellationToken ct);
 
     Task<host_registration_draft?> FindLatestDraftByEmailAsync(string email, CancellationToken ct);
 

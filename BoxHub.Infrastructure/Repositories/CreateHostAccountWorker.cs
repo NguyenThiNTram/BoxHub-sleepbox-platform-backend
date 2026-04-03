@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using BoxHub.Domain.Entities;
 using BoxHub.Application.Constants;
 
-namespace BoxHub.Infrastructure.Services;
+namespace BoxHub.Infrastructure.Repositories;
 
 /// <summary>
 /// Tạo User Host + profile + tài liệu sau khi moderator approve (transaction DB).

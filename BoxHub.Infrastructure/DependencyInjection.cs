@@ -2,9 +2,7 @@ using BoxHub.Application.Interfaces;
 using BoxHub.Application.Interfaces.Repositories;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Application.Services;
-using BoxHub.Infrastructure.BackgroundJobs;
 using BoxHub.Infrastructure.Repositories;
-using BoxHub.Infrastructure.Services;
 using BoxHub.Shared.Helpers.Photos;
 using BoxHub.Shared.Helpers;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BoxHub.Infrastructure.Security;
+using BoxHub.Infrastructure.BackgroundJobs;
 
 namespace BoxHub.Infrastructure
 {

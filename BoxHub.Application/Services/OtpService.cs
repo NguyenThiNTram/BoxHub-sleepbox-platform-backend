@@ -63,7 +63,7 @@ public sealed class OtpService : IOtpService
             }
         }
 
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         var latest = await _repo.GetLatestOtpForEmailAsync(email, request.Purpose, ct);
         if (latest != null && (now - latest.created_at).TotalSeconds < 60)
@@ -123,7 +123,7 @@ public sealed class OtpService : IOtpService
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code))
             return Result<VerifyOtpResponse>.Failure(ErrorCodes.ValidationFailed, "Email/OTP không hợp lệ.", 400);
 
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         var otpMatch = await _repo.FindValidOtpAsync(email, code, request.Purpose, now, ct);
         if (otpMatch == null)
         {
@@ -171,7 +171,7 @@ public sealed class OtpService : IOtpService
         if (string.IsNullOrWhiteSpace(email))
             return Result<SimpleMessageResponse>.Failure(ErrorCodes.ValidationFailed, "Email không hợp lệ.", 400);
 
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         var latest = await _repo.GetLatestOtpForEmailAsync(email, request.Purpose, ct);
         if (latest != null && (now - latest.created_at).TotalSeconds < 60)
             return Result<SimpleMessageResponse>.Failure(ErrorCodes.OtpRateLimited, "Vui lòng đợi ít nhất 60 giây trước khi gửi lại OTP.", 429);

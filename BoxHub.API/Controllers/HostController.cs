@@ -6,17 +6,17 @@ using Microsoft.AspNetCore.Mvc;
 namespace BoxHub.API.Controllers;
 
 [ApiController]
-[Route("api/host/register")]
-public sealed class HostRegisterController : ControllerBase
+[Route("api/host")]
+public sealed class HostController : ControllerBase
 {
     private readonly IHostRegistrationService _hostRegistration;
 
-    public HostRegisterController(IHostRegistrationService hostRegistration)
+    public HostController(IHostRegistrationService hostRegistration)
     {
         _hostRegistration = hostRegistration;
     }
 
-    [HttpPost("draft")]
+    [HttpPost("register/draft")]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateDraft([FromForm] RegisterHostDraftForm form, CancellationToken ct)
@@ -29,7 +29,7 @@ public sealed class HostRegisterController : ControllerBase
         return Created(string.Empty, result.Value);
     }
 
-    [HttpGet("draft/{draftId:guid}")]
+    [HttpGet("register/draft/{draftId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDraftForEdit(
         [FromRoute] Guid draftId,
@@ -43,7 +43,7 @@ public sealed class HostRegisterController : ControllerBase
         return Ok(result.Value);
     }
 
-    [HttpPut("draft/{draftId:guid}")]
+    [HttpPut("register/draft/{draftId:guid}")]
     public async Task<IActionResult> UpdateDraft(
         [FromRoute] Guid draftId,
         [FromForm] RegisterHostDraftForm form,
@@ -84,4 +84,35 @@ public sealed class HostRegisterController : ControllerBase
         {
             StatusCode = status
         };
+
+    [HttpPost("register/set-password")]
+    public async Task<IActionResult> SetPassword([FromBody] HostSetPasswordRequest request, CancellationToken ct)
+    {
+        string? token = null;
+
+        if (Request.Headers.TryGetValue("token", out var tokenHeader))
+            token = tokenHeader.FirstOrDefault();
+
+        if (string.IsNullOrWhiteSpace(token) &&
+            Request.Headers.TryGetValue("Authorization", out var authHeader))
+        {
+            var value = authHeader.ToString().Trim();
+            if (value.StartsWith("Bearer", StringComparison.OrdinalIgnoreCase))
+            {
+                var rest = value.Substring("Bearer".Length).Trim();
+                token = rest;
+            }
+            else
+            {
+                token = value;
+            }
+        }
+
+        var result = await _hostRegistration.SetPasswordAsync(token, request, ct);
+        if (!result.IsSuccess)
+            if (!result.IsSuccess)
+                return ProblemResult(result.ErrorCode, result.ErrorMessage, result.HttpStatus ?? 400);
+
+        return Ok(result.Value);
+    }
 }
