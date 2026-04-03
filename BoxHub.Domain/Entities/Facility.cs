@@ -9,6 +9,8 @@ public partial class facility
 
     public Guid brand_id { get; set; }
 
+    public Guid zone_id { get; set; }
+
     public string facility_name { get; set; } = null!;
 
     public string? description { get; set; }
@@ -40,6 +42,8 @@ public partial class facility
     public virtual ICollection<box_availability> box_availabilities { get; set; } = new List<box_availability>();
 
     public virtual brand brand { get; set; } = null!;
+
+    public virtual Zone Zone { get; set; } = null!;
 
     public virtual ICollection<conversation> conversations { get; set; } = new List<conversation>();
 

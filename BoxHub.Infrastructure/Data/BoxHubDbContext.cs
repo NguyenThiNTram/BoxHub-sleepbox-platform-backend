@@ -471,6 +471,12 @@ public partial class BoxHubDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("facilities_brand_id_fkey");
 
+            entity.HasOne(d => d.Zone)
+                .WithMany(p => p.Facilities)
+                .HasForeignKey(d => d.zone_id)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("facilities_zone_id_fkey");
+
             //entity.HasMany(d => d.amenities).WithMany(p => p.facilities)
             //    .UsingEntity<Dictionary<string, object>>(
             //        "facility_amenity",
@@ -550,6 +556,29 @@ public partial class BoxHubDbContext : DbContext
             entity.HasOne(d => d.reviewed_by_navigation).WithMany(p => p.facility_documents)
                 .HasForeignKey(d => d.reviewed_by)
                 .HasConstraintName("fk_reviewer");
+        });
+
+        modelBuilder.Entity<Zone>(entity =>
+        {
+            entity.HasKey(e => e.ZoneId).HasName("zones_pkey");
+
+            entity.ToTable("zones");
+
+            entity.HasIndex(e => e.ZoneCode).IsUnique().HasDatabaseName("ux_zones_code");
+
+            entity.Property(e => e.ZoneId).HasColumnName("zone_id").HasDefaultValueSql("gen_random_uuid()");
+
+            entity.Property(e => e.ZoneCode).HasColumnName("zone_code").HasMaxLength(50).IsRequired();
+
+            entity.Property(e => e.ZoneName).HasColumnName("zone_name").HasMaxLength(100).IsRequired();
+
+            entity.Property(e => e.Description).HasColumnName("description");
+
+            entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()");
+
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
         });
 
         modelBuilder.Entity<host_addon_price>(entity =>

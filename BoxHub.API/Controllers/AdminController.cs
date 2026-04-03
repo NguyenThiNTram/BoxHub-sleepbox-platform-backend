@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace BoxHub.API.Controllers
 {
-    [Route("api/Admin")]
+    [Route("api/admin")]
     [ApiController]
     [Authorize(Roles = "ADMIN")]
     public class AdminController : ControllerBase
@@ -21,7 +21,7 @@ namespace BoxHub.API.Controllers
             _adminService = adminService;
         }
 
-        [HttpPost("Register")]
+        [HttpPost("register")]
         public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid)
@@ -38,7 +38,7 @@ namespace BoxHub.API.Controllers
             return Ok(result.Value);
         }
 
-        [HttpPatch("Users/{targetUserId}/Suspend")]
+        [HttpPatch("users/{targetUserId}/suspend")]
         public async Task<IActionResult> SuspendUser([FromRoute] Guid targetUserId, CancellationToken ct)
         {
             var userIdResult = GetCurrentUserId();
@@ -86,7 +86,7 @@ namespace BoxHub.API.Controllers
             return Ok(result.Value);
         }
 
-        [HttpGet("Users/Get-list")]
+        [HttpGet("users/get_list")]
         public async Task<IActionResult> GetUsers(
             [FromQuery] GetUsersRequest request,
             CancellationToken ct)

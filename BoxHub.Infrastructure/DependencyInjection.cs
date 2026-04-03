@@ -39,7 +39,7 @@ namespace BoxHub.Infrastructure
             services.AddScoped<ISystemPriceRuleRepository, SystemPriceRuleRepository>();
             services.AddScoped<IPlatformFeeConfigRepository, PlatformFeeConfigRepository>();
             services.AddScoped<IAddonServiceRepository, AddonServiceRepository>();
-            
+            //services.AddScoped<IZoneRepository, ZoneRepository>();
 
             //SERVICE
 

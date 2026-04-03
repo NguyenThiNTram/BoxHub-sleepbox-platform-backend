@@ -161,6 +161,11 @@ namespace BoxHub.Application.Mappers
 
             CreateMap<UpdateAddonServiceRequest, addon_service>()
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+
+            // ===== ZONE =====
+            //CreateMap<Zone, ZoneResponse>();
+            //CreateMap<CreateZoneRequest, Zone>()
+            //    .ForMember(dest => dest.ZoneCode, opt => opt.MapFrom(src => src.ZoneCode.Trim().ToUpper()));
         }
     }
 }
