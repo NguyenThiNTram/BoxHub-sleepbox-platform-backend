@@ -86,7 +86,7 @@ namespace BoxHub.API.Controllers
             return Ok(result.Value);
         }
 
-        [HttpGet("users/get_list")]
+        [HttpGet("users/get-list")]
         public async Task<IActionResult> GetUsers(
             [FromQuery] GetUsersRequest request,
             CancellationToken ct)

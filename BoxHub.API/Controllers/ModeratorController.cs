@@ -12,9 +12,9 @@ using System.Security.Claims;
 
 namespace BoxHub.API.Controllers
 {
-[ApiController]
-    [Route("api/moderator/users")]
-[Authorize(Roles = "MODERATOR")]
+    [ApiController]
+    [Route("api/moderator")]
+    [Authorize(Roles = "MODERATOR")]
     public class ModeratorController : ControllerBase
 {
         private readonly IModeratorService _moderatorService;
@@ -25,7 +25,7 @@ namespace BoxHub.API.Controllers
                 _moderatorService = moderatorService;
                 _svc = svc;
         }
-        [HttpGet]
+        [HttpGet("user/list")]
         public async Task<ActionResult<PagedResponse<AccountListItem>>> GetUsers(
             [FromQuery] AccountFilter filter,
             CancellationToken ct)
@@ -34,7 +34,7 @@ namespace BoxHub.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{userId:guid}")]
+        [HttpGet("user/{userId:guid}")]
         public async Task<ActionResult<AccountDetail>> GetUserDetail(
             Guid userId,
             CancellationToken ct)
@@ -47,7 +47,7 @@ namespace BoxHub.API.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{userId:guid}/suspend")]
+        [HttpPut("user/{userId:guid}/suspend")]
         public async Task<ActionResult<SuspendAccountResult>> SuspendUser(
             Guid userId,
             [FromBody] SuspendAccountRequest request,

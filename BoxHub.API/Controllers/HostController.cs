@@ -1,12 +1,14 @@
 using BoxHub.Application.DTOs.Requests.Hosts;
 using BoxHub.Application.Interfaces.Services;
 using BoxHub.Shared.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoxHub.API.Controllers;
 
 [ApiController]
 [Route("api/host")]
+[Authorize(Roles = "HOST")]
 public sealed class HostController : ControllerBase
 {
     private readonly IHostRegistrationService _hostRegistration;

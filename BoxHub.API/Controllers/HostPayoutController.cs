@@ -10,7 +10,7 @@ namespace BoxHub.API.Controllers;
 
 [ApiController]
 [Route("api/host/payout-account")]
-[Authorize]
+[Authorize(Roles = "HOST")]
 public sealed class HostPayoutController : ControllerBase
 {
     private readonly IHostPayoutService _payouts;
