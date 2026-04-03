@@ -8,7 +8,7 @@ namespace BoxHub.API.Controllers;
 
 [ApiController]
 [Route("api/host")]
-[Authorize(Roles = "HOST")]
+
 public sealed class HostController : ControllerBase
 {
     private readonly IHostRegistrationService _hostRegistration;

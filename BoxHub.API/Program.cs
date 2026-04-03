@@ -174,7 +174,11 @@ namespace BoxHub.API
                         ValidateIssuerSigningKey = true,
 
                         ValidIssuer = jwtSection["Issuer"],
-                        ValidAudience = jwtSection["Audience"],
+                        ValidAudiences = new[]
+                        {
+                            jwtSection["Audience"],
+                            jwtSection["HostRegistrationAudience"]
+                        },
                         IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
 
                         ClockSkew = TimeSpan.Zero
