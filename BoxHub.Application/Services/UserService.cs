@@ -16,12 +16,21 @@ namespace BoxHub.Application.Services
         private readonly IUserRepository _users;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _uow;
+        private readonly ICloudinaryService _cloudinary;
+        private readonly IPasswordService _passwordService;
 
-        public UserService(IUserRepository users, IMapper mapper, IUnitOfWork uow)
+        public UserService(
+            IUserRepository users,
+            IMapper mapper,
+            IUnitOfWork uow,
+            ICloudinaryService cloudinary,
+            IPasswordService passwordService)
         {
             _users = users;
             _mapper = mapper;
             _uow = uow;
+            _cloudinary = cloudinary;
+            _passwordService = passwordService;
         }
 
         public async Task<UserProfileResponse> GetCurrentUserAsync(Guid userId, CancellationToken ct)
@@ -105,6 +114,30 @@ namespace BoxHub.Application.Services
             user.user_status = UserStatus.Active;
             user.deleted_at = null;
 
+            await _uow.SaveChangesAsync(ct);
+        }
+
+        public async Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                throw new ApiException(ErrorCodes.ValidationFailed, "Mật khẩu không được để trống", 400);
+            }
+
+            var user = await _users.GetByIdAsync(userId, ct);
+            if (user == null)
+            {
+                throw new ApiException(ErrorCodes.UserNotFound, "Người dùng không tồn tại", 404);
+            }
+
+            if (!_passwordService.VerifyPassword(user.password_hash, request.CurrentPassword))
+            {
+                throw new ApiException(ErrorCodes.ValidationFailed, "Mật khẩu hiện tại không đúng", 400);
+            }
+
+            user.password_hash = _passwordService.HashPassword(request.NewPassword);
+
+            await _users.UpdateAsync(user, ct);
             await _uow.SaveChangesAsync(ct);
         }
 

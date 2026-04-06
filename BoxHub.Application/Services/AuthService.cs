@@ -18,13 +18,15 @@ namespace BoxHub.Application.Services
         private readonly IPasswordService _passwordService;
         private readonly IJwtService _jwtService;
         private readonly IUnitOfWork _uow;
+        private readonly IOtpService _otpService;
 
-        public AuthService(IUserRepository users, IPasswordService passwordService, IJwtService jwtService, IUnitOfWork uow)
+        public AuthService(IUserRepository users, IPasswordService passwordService, IJwtService jwtService, IUnitOfWork uow, IOtpService otpService)
         {
             _users = users;
             _passwordService = passwordService;
             _jwtService = jwtService;
             _uow = uow;
+            _otpService = otpService;
         }
 
         public async Task<AuthResponse> AuthenticateAsync(
@@ -99,6 +101,67 @@ namespace BoxHub.Application.Services
             await _uow.SaveChangesAsync(ct);
 
             return _jwtService.GenerateAccessToken(newUser);
+        }
+
+        public Task LogoutAsync(CancellationToken ct)
+        {
+            _ = ct;
+            return Task.CompletedTask;
+        }
+
+        public async Task ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken ct)
+        {
+            var user = await _users.GetByEmailAsync(request.Email.Trim().ToLowerInvariant(), ct);
+            if (user == null)
+            {
+                // To prevent email enumeration, we just return successfully
+                return;
+            }
+
+            var sendOtpRequest = new BoxHub.Application.DTOs.Requests.Otp.SendOtpRequest
+            {
+                Email = request.Email,
+                Purpose = OTPPurpose.FORGOT_PASSWORD
+            };
+
+            var result = await _otpService.SendAsync(sendOtpRequest, ct);
+            if (!result.IsSuccess)
+            {
+                throw new ApiException(result.ErrorCode ?? ErrorCodes.ServerError, result.ErrorMessage ?? "Failed to send OTP", result.HttpStatus ?? 500);
+            }
+        }
+
+        public async Task ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.OtpCode) || string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                throw new ApiException(ErrorCodes.ValidationFailed, "All fields are required", 400);
+            }
+
+            var verifyOtpRequest = new BoxHub.Application.DTOs.Requests.Otp.VerifyOtpGenericRequest
+            {
+                Email = request.Email,
+                OtpCode = request.OtpCode,
+                Purpose = OTPPurpose.FORGOT_PASSWORD
+            };
+
+            var verifyResult = await _otpService.VerifyAsync(verifyOtpRequest, ct);
+            if (!verifyResult.IsSuccess)
+            {
+                throw new ApiException(verifyResult.ErrorCode ?? ErrorCodes.ValidationFailed, verifyResult.ErrorMessage ?? "Invalid OTP", verifyResult.HttpStatus ?? 400);
+            }
+
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            var user = await _users.GetByEmailAsync(normalizedEmail, ct);
+            if (user == null)
+            {
+                throw new ApiException(ErrorCodes.UserNotFound, "User not found", 404);
+            }
+
+            user.password_hash = _passwordService.HashPassword(request.NewPassword);
+            
+            await _users.UpdateAsync(user, ct);
+            await _uow.SaveChangesAsync(ct);
         }
 
         private static string BuildUsernameFromEmail(string email)

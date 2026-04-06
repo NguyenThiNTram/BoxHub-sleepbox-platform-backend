@@ -1,4 +1,4 @@
-﻿using BoxHub.Application.DTOs.Requests.Auths;
+using BoxHub.Application.DTOs.Requests.Auths;
 using BoxHub.Application.DTOs.Responses;
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,9 @@ namespace BoxHub.Application.Interfaces.Services
     {
         Task<AuthResponse> AuthenticateAsync(string email, string password, CancellationToken ct);
         Task<AuthResponse?> RegisterGuestAsync(RegisterGuestRequest request, CancellationToken ct);
+        Task LogoutAsync(CancellationToken ct);
+        Task ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken ct);
+        Task ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct);
         //Task<AuthResponse?> LoginGuestAsync(LoginRequest request, CancellationToken ct);
     }
 }

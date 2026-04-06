@@ -9,6 +9,7 @@ namespace BoxHub.Application.Interfaces.Services
         Task<UserProfileResponse> UpdateUserProfileAsync(Guid userId, UpdateUserProfileRequest request, CancellationToken ct);
         Task SoftDeleteAccountAsync(Guid userId, CancellationToken ct);
         Task ReactivateAccountAsync(Guid userId, CancellationToken ct);
+        Task ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct);
     }
 }
 

@@ -77,6 +77,25 @@ public class UsersController : ControllerBase
         });
     }
 
+    [HttpPost("me/change-password")]
+    public async Task<ActionResult> ChangePassword(
+        [FromBody] ChangePasswordRequest request,
+        CancellationToken ct)
+    {
+        var userId = GetUserId();
+
+        if (userId == null)
+            return Unauthorized(ErrorFactory.Unauthorized(HttpContext));
+
+        await _userService.ChangePasswordAsync(userId.Value, request, ct);
+
+        return Ok(new
+        {
+            success = true,
+            message = "Đổi mật khẩu thành công"
+        });
+    }
+
     private Guid? GetUserId()
     {
         var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
